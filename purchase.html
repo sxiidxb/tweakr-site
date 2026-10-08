@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Tweakr Black</title>
+    <!-- Tailwind CSS v4 via CDN -->
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- PayPal SDK -->
+    <script src="https://www.paypal.com/sdk/js?client-id=AXCgvj5kVvZzspdZO1OfDLnFHrdXUxxh0WoLgQEsVqPJ-Z8opOeZ5d1UGQsR5M0WImwwgpKAO0uRb_Rf&currency=USD"></script>
+
+    <style type="text/tailwindcss">
+        @theme {
+            --font-sans: 'Plus Jakarta Sans', sans-serif;
+            --color-bg-dark: #050507;
+            --color-tweakr-blue: #00f2fe;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--color-bg-dark);
+            color: #ffffff;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        .squircle {
+            border-radius: 22px;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .badge-glow {
+            box-shadow: 0 0 12px rgba(0, 242, 254, 0.4);
+            border: 1px solid rgba(0, 242, 254, 0.6);
+            color: var(--color-tweakr-blue);
+            background: rgba(0, 242, 254, 0.1);
+        }
+
+        .btn-blue {
+            background-color: var(--color-tweakr-blue);
+            color: #000;
+            transition: all 0.3s ease;
+        }
+
+        .btn-blue:hover {
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* Subtle grid background for cyber aesthetic */
+        .bg-grid {
+            background-size: 40px 40px;
+            background-image:
+                linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+        }
+
+        /* Overlay loader (shown during license generation) */
+        #loadingOverlay {
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            background: rgba(5, 5, 7, 0.8);
+        }
+    </style>
+</head>
+<body class="bg-bg-dark text-white bg-grid relative overflow-x-hidden">
+    <!-- Radial gradient overlay -->
+    <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(0,242,254,0.05)_0%,transparent_50%)] pointer-events-none"></div>
+
+    <main class="container mx-auto px-6 py-16 relative z-10 min-h-screen flex flex-col items-center">
+        <!-- Top Navigation -->
+        <div class="w-full max-w-3xl mb-12">
+            <a href="index.html" class="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                <span class="font-medium tracking-wide">Back to Home</span>
+            </a>
+        </div>
+
+        <!-- Header -->
+        <div class="text-center mb-12 max-w-3xl mx-auto">
+            <h1 class="text-4xl md:text-5xl font-bold tracking-tight mb-4 bg-gradient-to-br from-white via-white to-gray-500 text-transparent bg-clip-text flex justify-center items-center gap-3">
+                Tweakr Black
+            </h1>
+            <p class="text-lg text-gray-400 font-light tracking-wide">
+                One simple plan. Everything included. Pay once, use it for school, projects, and everyday speed.
+            </p>
+        </div>
+
+        <!-- Single Pricing Card -->
+        <div class="w-full max-w-2xl">
+            <div class="squircle glass-panel p-8 md:p-10 flex flex-col relative overflow-hidden group transition-all duration-500 hover:border-[#00f2fe]/30">
+                <div class="absolute -inset-px bg-gradient-to-br from-[#00f2fe]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+
+                <div class="flex justify-between items-start mb-4 z-10">
+                    <div>
+                        <h2 class="text-2xl font-semibold tracking-tight text-white mb-2">Full Plus Tier</h2>
+                        <span class="text-sm text-gray-400 font-medium tracking-wide">Every feature. One price.</span>
+                    </div>
+                    <span class="px-3 py-1 text-xs font-semibold uppercase tracking-wider rounded-full badge-glow">
+                        $15.00
+                    </span>
+                </div>
+
+                <ul class="text-gray-300 leading-relaxed mb-8 z-10 font-light space-y-3">
+                    <li class="flex items-center gap-3">
+                        <svg class="w-5 h-5 text-[#00f2fe] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        Live Process Management — see and control what's running
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <svg class="w-5 h-5 text-[#00f2fe] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        Script Inspector — check scripts before you run them
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <svg class="w-5 h-5 text-[#00f2fe] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        Offline Bug Doctor — fix common problems without internet
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <svg class="w-5 h-5 text-[#00f2fe] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        Secret Vault — keep passwords and keys locked on your PC
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <svg class="w-5 h-5 text-[#00f2fe] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        Network Pulse — watch your connection in real time
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <svg class="w-5 h-5 text-[#00f2fe] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        Local AI Toolchain — smart help that runs on your machine
+                    </li>
+                </ul>
+
+                <div class="z-10 mt-auto">
+                    <div id="paypal-button-container-full"></div>
+                </div>
+            </div>
+
+            <p class="text-center text-sm text-gray-500 mt-6 font-light">
+                After payment you'll be taken to your download page with your license key.
+            </p>
+        </div>
+    </main>
+
+    <!-- Overlay Loader (shown during license generation) -->
+    <div id="loadingOverlay" class="fixed inset-0 z-40 bg-[#050507]/80 backdrop-blur-sm hidden flex-col items-center justify-center">
+        <div class="w-12 h-12 border-4 border-[#00f2fe]/30 border-t-[#00f2fe] rounded-full animate-spin mb-4"></div>
+        <p class="text-white font-medium tracking-wide">Generating your license...</p>
+    </div>
+
+    <!-- PayPal and Checkout Script -->
+    <script>
+        const EDGE_FUNCTION_URL = "https://vtonvtzhtkwksydpilwf.supabase.co/functions/v1/generate-license";
+
+        function showLoading() {
+            document.getElementById("loadingOverlay").classList.remove("hidden");
+            document.getElementById("loadingOverlay").classList.add("flex");
+        }
+
+        function hideLoading() {
+            document.getElementById("loadingOverlay").classList.add("hidden");
+            document.getElementById("loadingOverlay").classList.remove("flex");
+        }
+
+        async function generateLicense(email, tier, paymentRef) {
+            showLoading();
+            try {
+                const response = await fetch(EDGE_FUNCTION_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, tier, paymentRef })
+                });
+
+                const data = await response.json();
+                hideLoading();
+
+                if (data.success && data.licenseKey) {
+                    // Automatic redirect to the download + key-delivery page
+                    const params = new URLSearchParams({
+                        key: data.licenseKey,
+                        email: email,
+                        tier: tier
+                    });
+                    window.location.href = "success.html?" + params.toString();
+                } else {
+                    const errMsg = data.error || "Unknown error";
+                    alert("License generation failed: " + errMsg + "\nOrder ID: " + paymentRef);
+                }
+            } catch (err) {
+                hideLoading();
+                console.error(err);
+                alert("An error occurred while generating your license. Please contact support with Order ID: " + paymentRef);
+            }
+        }
+
+        // Full Plus Tier Button Setup — $15.00
+        paypal.Buttons({
+            createOrder: function(data, actions) {
+                return actions.order.create({
+                    purchase_units: [{
+                        description: "Tweakr Black - Full Plus Tier",
+                        amount: {
+                            value: "15.00"
+                        }
+                    }]
+                });
+            },
+            onApprove: function(data, actions) {
+                return actions.order.capture().then(function(details) {
+                    const email = details.payer.email_address;
+                    const paymentRef = details.id;
+                    generateLicense(email, 'full', paymentRef);
+                });
+            }
+        }).render('#paypal-button-container-full');
+    </script>
+</body>
+</html>

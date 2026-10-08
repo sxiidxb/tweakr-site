@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>You're in — Tweakr Black</title>
+    <!-- Tailwind CSS v4 via CDN -->
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style type="text/tailwindcss">
+        @theme {
+            --font-sans: 'Plus Jakarta Sans', sans-serif;
+            --color-bg-dark: #050507;
+            --color-tweakr-blue: #00f2fe;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--color-bg-dark);
+            color: #ffffff;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        .squircle {
+            border-radius: 22px;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .badge-glow {
+            box-shadow: 0 0 12px rgba(0, 242, 254, 0.4);
+            border: 1px solid rgba(0, 242, 254, 0.6);
+            color: var(--color-tweakr-blue);
+            background: rgba(0, 242, 254, 0.1);
+        }
+
+        .btn-blue {
+            background-color: var(--color-tweakr-blue);
+            color: #000;
+            transition: all 0.3s ease;
+        }
+
+        .btn-blue:hover {
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .bg-grid {
+            background-size: 40px 40px;
+            background-image:
+                linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+        }
+    </style>
+</head>
+<body class="bg-bg-dark text-white bg-grid relative overflow-x-hidden">
+    <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(0,242,254,0.05)_0%,transparent_50%)] pointer-events-none"></div>
+
+    <main class="container mx-auto px-6 py-16 relative z-10 min-h-screen flex flex-col items-center">
+        <div class="text-center mb-12 max-w-3xl mx-auto">
+            <svg class="w-16 h-16 text-[#00f2fe] mb-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <h1 class="text-4xl md:text-5xl font-bold tracking-tight mb-4 bg-gradient-to-br from-white via-white to-gray-500 text-transparent bg-clip-text">
+                Payment successful
+            </h1>
+            <p class="text-lg text-gray-400 font-light tracking-wide">
+                Thanks <span id="buyerEmail" class="text-white">friend</span>! Your app and license key are below. Keep this page open until you're set up.
+            </p>
+        </div>
+
+        <div class="w-full max-w-2xl space-y-8">
+            <!-- License key card -->
+            <div class="squircle glass-panel p-8 flex flex-col items-center text-center">
+                <span class="px-3 py-1 text-xs font-semibold uppercase tracking-wider rounded-full badge-glow mb-4">
+                    Full Plus Tier
+                </span>
+                <p class="text-gray-400 font-light mb-4">Copy this key into the app's Settings page to unlock everything.</p>
+                <div class="w-full bg-black/40 border border-white/10 rounded-lg p-4 mb-4 flex items-center justify-between">
+                    <code id="licenseKeyText" class="text-[#00f2fe] font-mono tracking-wider truncate mr-4">Loading...</code>
+                    <button id="copyLicenseBtn" class="text-gray-400 hover:text-white transition-colors p-2" title="Copy to clipboard">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                    </button>
+                </div>
+                <p id="copyHint" class="text-sm text-gray-500 h-5"></p>
+            </div>
+
+            <!-- Downloads card -->
+            <div class="squircle glass-panel p-8">
+                <h2 class="text-2xl font-semibold tracking-tight text-white mb-2">Download the app</h2>
+                <p class="text-gray-400 font-light mb-6">Pick the file that suits you. Both install the same app.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- TODO: drop the real installer files next to this page (or in ./downloads/) and keep these file names -->
+                    <a href="./downloads/TWEAKR-BLACK_0.1.0_x64-setup.exe" download class="squircle btn-blue block text-center py-4 px-6 font-semibold tracking-wide shadow-lg">
+                        Download EXE
+                    </a>
+                    <a href="./downloads/TWEAKR-BLACK_0.1.0_x64_en-US.msi" download class="squircle block text-center py-4 px-6 font-semibold tracking-wide border border-white/20 bg-white/5 hover:bg-white/10 transition-all">
+                        Download MSI
+                    </a>
+                </div>
+                <div class="mt-6 text-sm text-gray-400 font-light space-y-1.5">
+                    <p><span class="text-white font-medium">1.</span> Install the app.</p>
+                    <p><span class="text-white font-medium">2.</span> Open Settings and paste your key.</p>
+                    <p><span class="text-white font-medium">3.</span> Hit Activate License. Done.</p>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <a href="index.html" class="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+                    <span class="font-medium tracking-wide">Back to Home</span>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const key = params.get("key");
+        const email = params.get("email");
+
+        if (key) {
+            document.getElementById("licenseKeyText").innerText = key;
+        } else {
+            document.getElementById("licenseKeyText").innerText = "No key found — please return to checkout or contact support.";
+        }
+
+        if (email) {
+            document.getElementById("buyerEmail").innerText = email;
+        }
+
+        document.getElementById("copyLicenseBtn").addEventListener("click", () => {
+            const keyText = document.getElementById("licenseKeyText").innerText;
+            navigator.clipboard.writeText(keyText).then(() => {
+                document.getElementById("copyHint").innerText = "Copied! Paste it into the app.";
+                setTimeout(() => { document.getElementById("copyHint").innerText = ""; }, 2500);
+            });
+        });
+    </script>
+</body>
+</html>
