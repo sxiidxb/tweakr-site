@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tweakr - System Optimizer</title>
+    <!-- Tailwind CSS v4 via CDN -->
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style type="text/tailwindcss">
+        @theme {
+            --font-sans: 'Plus Jakarta Sans', sans-serif;
+            --color-bg-dark: #07090E;
+            --color-tweakr-blue: #38BDF8;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--color-bg-dark);
+            color: #ffffff;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        .squircle {
+            border-radius: 22px;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .badge-glow {
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+            border: 1px solid rgba(56, 189, 248, 0.6);
+            color: var(--color-tweakr-blue);
+            background: rgba(56, 189, 248, 0.1);
+        }
+
+        .badge-glass {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .btn-blue {
+            background-color: var(--color-tweakr-blue);
+            color: #000;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-blue:hover {
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .btn-disabled {
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.3);
+            cursor: not-allowed;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        /* Subtle grid background for cyber aesthetic */
+        .bg-grid {
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+        }
+    </style>
+</head>
+<body class="bg-bg-dark text-white bg-grid relative overflow-x-hidden">
+    <!-- Radial gradient overlay -->
+    <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(56,189,248,0.05)_0%,transparent_50%)] pointer-events-none"></div>
+
+    <main class="container mx-auto px-6 py-24 relative z-10 min-h-screen flex flex-col items-center justify-center">
+        <!-- Hero Header -->
+        <div class="text-center mb-20 max-w-3xl mx-auto">
+            <h1 class="text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-gradient-to-br from-white via-white to-gray-500 text-transparent bg-clip-text">
+                System Optimization.<br>Redefined.
+            </h1>
+            <p class="text-lg md:text-xl text-gray-400 font-light tracking-wide">
+                Experience the next generation of performance tuning. 
+                Minimalist, powerful, and deeply integrated.
+            </p>
+        </div>
+
+        <!-- Edition Selector -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl">
+            
+            <!-- Tweakr Grey Edition -->
+            <div class="squircle glass-panel p-8 md:p-10 flex flex-col relative overflow-hidden group transition-all duration-500 hover:border-[#38BDF8]/30">
+                <!-- Subtle glow effect on hover -->
+                <div class="absolute -inset-px bg-gradient-to-br from-[#38BDF8]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+                
+                <div class="flex justify-between items-start mb-6 z-10">
+                    <div>
+                        <h2 class="text-3xl font-semibold tracking-tight text-white mb-2">Tweakr Grey</h2>
+                        <span class="text-sm text-gray-400 font-medium tracking-wide">v2.0 Stable Release</span>
+                    </div>
+                    <span class="px-3 py-1 text-xs font-semibold uppercase tracking-wider rounded-full badge-glow">
+                        Available Now
+                    </span>
+                </div>
+                
+                <p class="text-gray-300 leading-relaxed mb-10 z-10 flex-grow font-light">
+                    The core high-performance utility suite featuring Dashboard, File Sorter ("TidySpace"), System Cleaner, Startup Manager, Tweakr Shield, System Fixes, and Monitor. Engineered for seamless everyday optimization.
+                </p>
+                
+                <div class="z-10 mt-auto">
+                    <!-- Link points to the download selection page -->
+                    <a href="download.html" class="squircle btn-blue w-full block text-center py-4 px-6 font-semibold tracking-wide shadow-lg">
+                        Get for free
+                    </a>
+                </div>
+            </div>
+
+            <!-- Tweakr Black Edition -->
+            <div class="squircle glass-panel p-8 md:p-10 flex flex-col relative overflow-hidden">
+                <div class="flex justify-between items-start mb-6 z-10">
+                    <div>
+                        <h2 class="text-3xl font-semibold tracking-tight text-gray-300 mb-2 flex items-center gap-3">
+                            Tweakr Black
+                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                        </h2>
+                        <span class="text-sm text-gray-500 font-medium tracking-wide">Next-Gen Enterprise Security</span>
+                    </div>
+                    <span class="px-3 py-1 text-xs font-semibold uppercase tracking-wider rounded-full badge-glass">
+                        Coming Soon
+                    </span>
+                </div>
+                
+                <p class="text-gray-400 leading-relaxed mb-10 z-10 flex-grow font-light">
+                    Advanced kernel-level monitoring, custom telemetry hooks, and automated threat isolation workflows. The ultimate toolkit for power users and security professionals.
+                </p>
+                
+                <div class="z-10 mt-auto">
+                    <button disabled class="squircle btn-disabled w-full block text-center py-4 px-6 font-medium tracking-wide transition-none">
+                        In Development
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</body>
+</html>
