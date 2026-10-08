@@ -35,7 +35,20 @@ function generateLicenseKey(tier: string): string {
 function isTestPayment(paymentRef: string): boolean {
   if (!paymentRef) return false;
   const upper = paymentRef.toUpperCase();
-  return upper.startsWith("TEST_") || upper.startsWith("MANUAL_") || upper.includes("BYPASS");
+  return (
+    upper.startsWith("TEST_") ||
+    upper.startsWith("MANUAL_") ||
+    upper.startsWith("COUPON_") ||
+    upper.includes("BYPASS")
+  );
+}
+
+// Coupons that grant 100% off (free access). Codes are matched case-insensitively.
+const FREE_COUPONS = new Set(["FIRST100", "100SAI"]);
+
+function isFreeCoupon(coupon: string | null | undefined): boolean {
+  if (!coupon) return false;
+  return FREE_COUPONS.has(coupon.trim().toUpperCase());
 }
 
 serve(async (req: Request) => {
@@ -46,7 +59,7 @@ serve(async (req: Request) => {
 
   try {
     // Parse body
-    const { email, tier, paymentRef } = await req.json();
+    const { email, tier, paymentRef, coupon } = await req.json();
 
     // --- Input validation ---
     if (!email || typeof email !== "string") {
@@ -59,8 +72,26 @@ serve(async (req: Request) => {
       return jsonResponse({ success: false, error: "Missing or invalid paymentRef." }, 400);
     }
 
+    // Coupon validation: only recognised codes are accepted. Unknown coupons
+    // are treated as if no coupon was supplied, so the caller must still pay.
+    let normalisedCoupon: string | null = null;
+    if (coupon !== undefined && coupon !== null && coupon !== "") {
+      if (typeof coupon !== "string") {
+        return jsonResponse({ success: false, error: "Invalid coupon field." }, 400);
+      }
+      const upper = coupon.trim().toUpperCase();
+      if (!FREE_COUPONS.has(upper)) {
+        return jsonResponse(
+          { success: false, error: "Coupon code is not valid or has expired." },
+          400,
+        );
+      }
+      normalisedCoupon = upper;
+    }
+
     // --- Payment verification gate ---
-    const skipVerification = isTestPayment(paymentRef);
+    // Coupon-based and test payments skip real PayPal verification.
+    const skipVerification = isTestPayment(paymentRef) || normalisedCoupon !== null;
 
     if (!skipVerification) {
       // TODO: Add real PayPal order verification here when going to production.
@@ -117,15 +148,19 @@ serve(async (req: Request) => {
         licenseKey: (existing as { license_key: string }).license_key,
         tier,
         email,
+        coupon: normalisedCoupon,
       });
     }
 
-    const { error: dbError } = await supabase.from("licenses").insert({
+    const insertRow: Record<string, unknown> = {
       email,
       tier,
       license_key: licenseKey,
       payment_ref: paymentRef,
-    });
+    };
+    if (normalisedCoupon) insertRow.coupon = normalisedCoupon;
+
+    const { error: dbError } = await supabase.from("licenses").insert(insertRow);
 
     if (dbError) {
       console.error("DB insert error:", dbError);
@@ -151,6 +186,7 @@ serve(async (req: Request) => {
       licenseKey,
       tier,
       email,
+      coupon: normalisedCoupon,
     });
   } catch (err) {
     console.error("Unhandled error:", err);

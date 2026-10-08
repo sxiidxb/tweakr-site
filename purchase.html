@@ -71,6 +71,85 @@
             -webkit-backdrop-filter: blur(15px);
             background: rgba(5, 5, 7, 0.8);
         }
+
+        /* Coupon input — Apple-grade obsidian field with hairline + cyan focus */
+        .coupon-field {
+            background: rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+            font-variant-ligatures: none;
+        }
+        .coupon-field::placeholder {
+            color: rgba(255, 255, 255, 0.28);
+            font-weight: 300;
+        }
+        .coupon-field:focus {
+            outline: none;
+            border-color: rgba(0, 242, 254, 0.6);
+            background: rgba(0, 0, 0, 0.6);
+            box-shadow: 0 0 0 1px rgba(0, 242, 254, 0.25), 0 0 18px rgba(0, 242, 254, 0.12);
+        }
+        .coupon-field.is-error {
+            border-color: rgba(255, 99, 99, 0.5);
+            box-shadow: 0 0 0 1px rgba(255, 99, 99, 0.2);
+        }
+        .coupon-field.is-success {
+            border-color: rgba(0, 242, 254, 0.6);
+            box-shadow: 0 0 0 1px rgba(0, 242, 254, 0.25), 0 0 18px rgba(0, 242, 254, 0.18);
+        }
+
+        .coupon-apply {
+            border: 1px solid rgba(0, 242, 254, 0.4);
+            color: #00f2fe;
+            background: rgba(0, 242, 254, 0.04);
+            transition: all 0.25s ease;
+        }
+        .coupon-apply:hover:not(:disabled) {
+            background: rgba(0, 242, 254, 0.12);
+            border-color: #00f2fe;
+            box-shadow: 0 0 16px rgba(0, 242, 254, 0.3);
+            transform: translateY(-1px);
+        }
+        .coupon-apply:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        .coupon-apply:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Coupon success badge — sits above the price chip */
+        .coupon-badge {
+            box-shadow: 0 0 14px rgba(0, 242, 254, 0.5);
+            border: 1px solid rgba(0, 242, 254, 0.7);
+            color: #00f2fe;
+            background: rgba(0, 242, 254, 0.12);
+            animation: badge-pop 320ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+        }
+        @keyframes badge-pop {
+            0%   { transform: scale(0.85); opacity: 0; }
+            60%  { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1);    opacity: 1; }
+        }
+
+        /* Polite inline message (error / hint) */
+        .coupon-msg {
+            transition: color 0.2s ease, opacity 0.2s ease;
+        }
+        .coupon-msg.is-error  { color: #ff8a8a; }
+        .coupon-msg.is-success { color: #7ef0d0; }
+
+        /* Strikethrough for original price when discounted */
+        .price-strike {
+            text-decoration: line-through;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Smooth price swap */
+        .price-swap {
+            transition: color 0.3s ease, transform 0.3s ease;
+        }
     </style>
 </head>
 <body class="bg-bg-dark text-white bg-grid relative overflow-x-hidden">
@@ -108,9 +187,14 @@
                         <h2 class="text-2xl font-semibold tracking-tight text-white mb-2">Full Plus Tier</h2>
                         <span class="text-sm text-gray-400 font-medium tracking-wide">Every feature. One price.</span>
                     </div>
-                    <span class="px-3 py-1 text-xs font-semibold uppercase tracking-wider rounded-full badge-glow">
-                        $15.00
-                    </span>
+                    <div class="flex flex-col items-end gap-2">
+                        <span id="priceChip" class="px-3 py-1 text-xs font-semibold uppercase tracking-wider rounded-full badge-glow price-swap">
+                            <span id="priceLabel">$15.00</span>
+                        </span>
+                        <span id="couponBadge" class="hidden px-3 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-full coupon-badge">
+                            <span id="couponBadgeText">Coupon applied</span>
+                        </span>
+                    </div>
                 </div>
 
                 <ul class="text-gray-300 leading-relaxed mb-8 z-10 font-light space-y-3">
@@ -140,8 +224,41 @@
                     </li>
                 </ul>
 
+                <!-- Coupon code field -->
+                <div class="z-10 mt-2 mb-5" id="couponSection">
+                    <label for="couponInput" class="block text-[10px] uppercase tracking-[0.18em] text-gray-500 mb-2 font-medium">
+                        Coupon code
+                    </label>
+                    <div class="flex gap-2">
+                        <input
+                            type="text"
+                            id="couponInput"
+                            placeholder="Enter code"
+                            autocomplete="off"
+                            autocapitalize="off"
+                            spellcheck="false"
+                            class="coupon-field flex-1 rounded-lg px-4 py-2.5 text-sm font-medium tracking-wide"
+                        />
+                        <button
+                            type="button"
+                            id="applyCouponBtn"
+                            class="coupon-apply rounded-lg px-5 py-2.5 text-sm font-semibold tracking-wide"
+                        >
+                            Apply
+                        </button>
+                    </div>
+                    <p id="couponMessage" class="coupon-msg text-xs mt-2 h-4 font-light"></p>
+                </div>
+
                 <div class="z-10 mt-auto">
                     <div id="paypal-button-container-full"></div>
+                    <button
+                        type="button"
+                        id="freeAccessBtn"
+                        class="hidden squircle w-full text-center py-4 px-6 font-semibold tracking-wide shadow-lg btn-blue"
+                    >
+                        <span id="freeAccessBtnLabel">Get Tweakr Black — Free</span>
+                    </button>
                 </div>
             </div>
 
@@ -161,6 +278,38 @@
     <script>
         const EDGE_FUNCTION_URL = "https://vtonvtzhtkwksydpilwf.supabase.co/functions/v1/generate-license";
 
+        // --- Coupon configuration ---
+        // Two launch codes. Both grant 100% off, but each gets a distinct
+        // label so analytics / support can tell them apart.
+        const COUPONS = {
+            "first100": {
+                code: "First100",
+                label: "Launch 100% off",
+                description: "Launch discount — 100% off"
+            },
+            "100sai": {
+                code: "100Sai",
+                label: "Family & friends",
+                description: "Family & friends — free access"
+            }
+        };
+        const ORIGINAL_PRICE = 15.00;
+        const FINAL_PRICE = 0.00; // Both supported coupons are 100% off.
+
+        let appliedCoupon = null; // null | { code, label, description }
+
+        // --- DOM refs ---
+        const couponInput     = document.getElementById("couponInput");
+        const applyBtn        = document.getElementById("applyCouponBtn");
+        const couponMessage   = document.getElementById("couponMessage");
+        const couponBadge     = document.getElementById("couponBadge");
+        const couponBadgeText = document.getElementById("couponBadgeText");
+        const priceChip       = document.getElementById("priceChip");
+        const priceLabel      = document.getElementById("priceLabel");
+        const paypalContainer = document.getElementById("paypal-button-container-full");
+        const freeAccessBtn   = document.getElementById("freeAccessBtn");
+        const freeAccessLabel = document.getElementById("freeAccessBtnLabel");
+
         function showLoading() {
             document.getElementById("loadingOverlay").classList.remove("hidden");
             document.getElementById("loadingOverlay").classList.add("flex");
@@ -171,25 +320,98 @@
             document.getElementById("loadingOverlay").classList.remove("flex");
         }
 
-        async function generateLicense(email, tier, paymentRef) {
+        function setCouponMessage(text, kind /* "error" | "success" | "neutral" */) {
+            couponMessage.textContent = text || "";
+            couponMessage.classList.remove("is-error", "is-success");
+            if (kind === "error")   couponMessage.classList.add("is-error");
+            if (kind === "success") couponMessage.classList.add("is-success");
+        }
+
+        function setInputState(state /* "error" | "success" | "neutral" */) {
+            couponInput.classList.remove("is-error", "is-success");
+            if (state === "error")   couponInput.classList.add("is-error");
+            if (state === "success") couponInput.classList.add("is-success");
+        }
+
+        function applyCoupon(rawCode) {
+            const key = (rawCode || "").trim().toLowerCase();
+            if (!key) {
+                setCouponMessage("Please enter a coupon code.", "error");
+                setInputState("error");
+                return;
+            }
+
+            const coupon = COUPONS[key];
+            if (!coupon) {
+                appliedCoupon = null;
+                setCouponMessage("That code isn't valid. Please check and try again.", "error");
+                setInputState("error");
+                // Reset UI back to default price
+                resetPricing();
+                return;
+            }
+
+            appliedCoupon = coupon;
+            setInputState("success");
+            setCouponMessage(coupon.description + " applied.", "success");
+            couponInput.disabled = true;
+            applyBtn.disabled = true;
+            applyBtn.textContent = "Applied";
+
+            // Show success status badge
+            couponBadgeText.textContent = coupon.label;
+            couponBadge.classList.remove("hidden");
+
+            // Update price dynamically
+            priceLabel.innerHTML = '<span class="price-strike">$' + ORIGINAL_PRICE.toFixed(2) + '</span> &nbsp; $' + FINAL_PRICE.toFixed(2);
+            priceChip.classList.add("price-swap");
+
+            // Swap checkout: hide PayPal, show free-access CTA
+            paypalContainer.classList.add("hidden");
+            freeAccessBtn.classList.remove("hidden");
+            freeAccessLabel.textContent = "Get Tweakr Black — Free";
+
+            // Notify PayPal SDK the container is gone (avoid console warnings).
+            try { paypalContainer.innerHTML = ""; } catch (e) { /* noop */ }
+            // Mark PayPal as unmounted so resetPricing() can re-render if needed.
+            paypalMounted = false;
+        }
+
+        function resetPricing() {
+            appliedCoupon = null;
+            couponInput.disabled = false;
+            applyBtn.disabled = false;
+            applyBtn.textContent = "Apply";
+            couponBadge.classList.add("hidden");
+            priceLabel.textContent = "$" + ORIGINAL_PRICE.toFixed(2);
+            // Restore PayPal button
+            paypalContainer.classList.remove("hidden");
+            freeAccessBtn.classList.add("hidden");
+            mountPayPalButton();
+        }
+
+        async function generateLicense(email, tier, paymentRef, coupon) {
             showLoading();
             try {
+                const payload = { email, tier, paymentRef };
+                if (coupon) payload.coupon = coupon;
+
                 const response = await fetch(EDGE_FUNCTION_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, tier, paymentRef })
+                    body: JSON.stringify(payload)
                 });
 
                 const data = await response.json();
                 hideLoading();
 
                 if (data.success && data.licenseKey) {
-                    // Automatic redirect to the download + key-delivery page
                     const params = new URLSearchParams({
                         key: data.licenseKey,
                         email: email,
                         tier: tier
                     });
+                    if (coupon) params.set("coupon", coupon);
                     window.location.href = "success.html?" + params.toString();
                 } else {
                     const errMsg = data.error || "Unknown error";
@@ -202,26 +424,62 @@
             }
         }
 
-        // Full Plus Tier Button Setup — $15.00
-        paypal.Buttons({
-            createOrder: function(data, actions) {
-                return actions.order.create({
-                    purchase_units: [{
-                        description: "Tweakr Black - Full Plus Tier",
-                        amount: {
-                            value: "15.00"
-                        }
-                    }]
-                });
-            },
-            onApprove: function(data, actions) {
-                return actions.order.capture().then(function(details) {
-                    const email = details.payer.email_address;
-                    const paymentRef = details.id;
-                    generateLicense(email, 'full', paymentRef);
-                });
+        // --- Coupon event wiring ---
+        applyBtn.addEventListener("click", () => applyCoupon(couponInput.value));
+        couponInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                applyCoupon(couponInput.value);
             }
-        }).render('#paypal-button-container-full');
+        });
+        // Clear error state as soon as the user starts editing again
+        couponInput.addEventListener("input", () => {
+            if (couponMessage.classList.contains("is-error")) {
+                setCouponMessage("", "neutral");
+                setInputState("neutral");
+            }
+        });
+
+        // --- Free-access CTA (replaces PayPal when a 100% coupon is applied) ---
+        // We need an email to mint the license. Prompt politely via a small modal-ish
+        // inline flow using prompt() for simplicity (keeps the page self-contained).
+        freeAccessBtn.addEventListener("click", () => {
+            if (!appliedCoupon) return;
+            const email = window.prompt("Enter the email you'd like your Tweakr Black license sent to:");
+            if (!email) return;
+            const trimmed = email.trim();
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+                alert("Please enter a valid email address.");
+                return;
+            }
+            const paymentRef = "COUPON_" + appliedCoupon.code.toUpperCase() + "_" + Date.now();
+            generateLicense(trimmed, "full", paymentRef, appliedCoupon.code);
+        });
+
+        // --- PayPal button mount (kept as a function so we can re-render on reset) ---
+        let paypalMounted = false;
+        function mountPayPalButton() {
+            if (paypalMounted) return;
+            paypalMounted = true;
+            paypal.Buttons({
+                createOrder: function(data, actions) {
+                    return actions.order.create({
+                        purchase_units: [{
+                            description: "Tweakr Black - Full Plus Tier",
+                            amount: { value: "15.00" }
+                        }]
+                    });
+                },
+                onApprove: function(data, actions) {
+                    return actions.order.capture().then(function(details) {
+                        const email = details.payer.email_address;
+                        const paymentRef = details.id;
+                        generateLicense(email, 'full', paymentRef, null);
+                    });
+                }
+            }).render('#paypal-button-container-full');
+        }
+        mountPayPalButton();
     </script>
 </body>
 </html>
