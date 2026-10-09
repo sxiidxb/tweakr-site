@@ -7,7 +7,7 @@
       "changes": [
         { "tag": "new", "text": "Tweakr Black beta portal: license-gated pre-release builds and premium feedback." },
         { "tag": "new", "text": "Tweakr Grey beta portal: free accounts, experimental builds, bug reports." },
-        { "tag": "new", "text": "Coupon codes First100 and 100Sai for free Full Plus access." },
+        { "tag": "new", "text": "Tweakr Grey v3.0 beta builds with experimental free features." },
         { "tag": "improvement", "text": "Strict one-license-per-email rule on purchase and coupons." },
         { "tag": "improvement", "text": "Clean URLs across the whole site (no more .html in the address bar)." }
       ]

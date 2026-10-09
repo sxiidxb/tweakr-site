@@ -22,7 +22,7 @@ serve(async (req: Request) => {
   }
 
   try {
-    const { key } = await req.json();
+    const { key, app_version } = await req.json();
     if (typeof key !== "string") {
       return jsonResponse({ success: false, error: "Missing license key.", code: "BAD_KEY" });
     }
@@ -73,6 +73,16 @@ serve(async (req: Request) => {
         { success: false, error: "License key has been revoked.", code: "REVOKED_KEY" },
         200,
       );
+    }
+
+    // Best-effort check-in: remember which app version used this key, so the
+    // admin purchaser directory can show it. Never blocks verification.
+    if (typeof app_version === "string" && app_version.trim().length > 0) {
+      try {
+        await supabase.from("licenses").update({ app_version: app_version.trim().slice(0, 32) }).eq("license_key", clean);
+      } catch (e) {
+        console.error("app_version check-in failed:", e);
+      }
     }
 
     return jsonResponse({ success: true, tier: rec.tier });

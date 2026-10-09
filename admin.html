@@ -136,18 +136,20 @@
                 <button data-tab="feedback" class="tab-btn squircle px-5 py-2.5 text-sm font-semibold border border-white/10 bg-white/5">Feedback inbox <span id="fbCount" class="ml-1 text-xs"></span></button>
                 <button data-tab="users" class="tab-btn squircle px-5 py-2.5 text-sm font-semibold border border-white/10 bg-white/5">Users</button>
                 <button data-tab="announce" class="tab-btn squircle px-5 py-2.5 text-sm font-semibold border border-white/10 bg-white/5">Announcements</button>
+                <button data-tab="audit" class="tab-btn squircle px-5 py-2.5 text-sm font-semibold border border-white/10 bg-white/5">Audit log</button>
             </div>
             <p id="dashMsg" class="text-sm font-light h-5"></p>
 
             <!-- Purchasers -->
             <section id="tab-purchasers" class="squircle glass-panel p-6 md:p-8 overflow-x-auto">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-xl font-semibold tracking-tight">Tweakr Black purchasers</h2>
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <h2 class="text-xl font-semibold tracking-tight mr-auto">Tweakr Black purchasers</h2>
+                    <input id="purchaserSearch" type="text" placeholder="Search email or key…" class="auth-field rounded-lg px-4 py-2 text-sm w-56" />
                     <button id="reloadPurchasers" class="squircle btn-ghost px-4 py-2 text-sm font-semibold">Refresh</button>
                 </div>
-                <table class="admin-table w-full min-w-[760px]">
-                    <thead><tr><th>Email</th><th>Tier</th><th>License key</th><th>Status</th><th>HWID</th><th>Purchased</th><th>Actions</th></tr></thead>
-                    <tbody id="purchaserRows"><tr><td colspan="7" class="text-gray-500 font-light">Loading…</td></tr></tbody>
+                <table class="admin-table w-full min-w-[820px]">
+                    <thead><tr><th>Email</th><th>Tier</th><th>License key</th><th>Status</th><th>HWID</th><th>App</th><th>Purchased</th><th>Actions</th></tr></thead>
+                    <tbody id="purchaserRows"><tr><td colspan="8" class="text-gray-500 font-light">Loading…</td></tr></tbody>
                 </table>
             </section>
 
@@ -161,10 +163,11 @@
                         <option value="black">Black</option>
                     </select>
                     <select id="fbStatusFilter" class="auth-field rounded-lg px-3 py-2 text-sm">
-                        <option value="">All statuses</option>
-                        <option value="new">New</option>
-                        <option value="reviewed">Reviewed</option>
-                        <option value="resolved">Resolved</option>
+                    <option value="">All statuses</option>
+                    <option value="pending">Pending</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="resolved">Resolved</option>
+                    <option value="dismissed">Dismissed</option>
                     </select>
                     <button id="reloadFeedback" class="squircle btn-ghost px-4 py-2 text-sm font-semibold">Refresh</button>
                 </div>
@@ -208,6 +211,21 @@
                         <button id="reloadAnn" class="squircle btn-ghost px-4 py-2 text-sm font-semibold">Refresh</button>
                     </div>
                     <div id="annList" class="space-y-3"><p class="text-gray-500 font-light">Loading…</p></div>
+                </div>
+            </section>
+
+            <!-- Audit log -->
+            <section id="tab-audit" class="hidden squircle glass-panel p-6 md:p-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-semibold tracking-tight">Admin activity</h2>
+                    <button id="reloadAudit" class="squircle btn-ghost px-4 py-2 text-sm font-semibold">Refresh</button>
+                </div>
+                <p class="text-gray-400 font-light text-sm mb-4">Every revoke, ban, delete, and broadcast — newest first.</p>
+                <div class="overflow-x-auto">
+                <table class="admin-table w-full min-w-[560px]">
+                    <thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Detail</th></tr></thead>
+                    <tbody id="auditRows"><tr><td colspan="4" class="text-gray-500 font-light">Loading…</td></tr></tbody>
+                </table>
                 </div>
             </section>
         </div>
@@ -267,34 +285,39 @@
             var tabs = document.querySelectorAll("#tabs .tab-btn");
             tabs.forEach(function (b) { b.classList.remove("active"); });
             btn.classList.add("active");
-            ["purchasers", "feedback", "users", "announce"].forEach(function (t) {
+            ["purchasers", "feedback", "users", "announce", "audit"].forEach(function (t) {
                 document.getElementById("tab-" + t).classList.toggle("hidden", t !== btn.dataset.tab);
             });
             if (btn.dataset.tab === "users" && !usersLoaded) loadUsers();
             if (btn.dataset.tab === "announce" && !annLoaded) loadAnnouncements();
+            if (btn.dataset.tab === "audit") loadAudit();
         });
 
         // ---- Purchasers ----
         async function loadPurchasers() {
             var tbody = document.getElementById("purchaserRows");
-            var res = await window.tweakrAuth.adminCall("purchasers", {});
+            var params = {};
+            var q = document.getElementById("purchaserSearch").value.trim();
+            if (q.length >= 2) params.search = q;
+            var res = await window.tweakrAuth.adminCall("purchasers", params);
             if (!res || !res.success) {
-                tbody.innerHTML = '<tr><td colspan="7" class="text-[#ff8a8a]">' + esc((res && res.error) || "Load failed.") + "</td></tr>";
+                tbody.innerHTML = '<tr><td colspan="8" class="text-[#ff8a8a]">' + esc((res && res.error) || "Load failed.") + "</td></tr>";
                 return;
             }
             var rows = res.purchasers || [];
             if (!rows.length) {
-                tbody.innerHTML = '<tr><td colspan="7" class="text-gray-500 font-light">No purchases yet.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="text-gray-500 font-light">No purchases found.</td></tr>';
                 return;
             }
             tbody.innerHTML = rows.map(function (p) {
                 var active = p.is_active !== false;
                 return "<tr>" +
-                    "<td class='text-white'>" + esc(p.email) + (p.coupon ? ' <span class="text-[10px] text-[#00f2fe] border border-[#00f2fe]/40 rounded-full px-2 py-0.5 ml-1">' + esc(p.coupon) + "</span>" : "") + "</td>" +
+                    "<td class='text-white'>" + esc(p.email) + "</td>" +
                     "<td>" + esc(p.tier) + "</td>" +
                     "<td class='license-key text-[#00f2fe]'>" + esc(p.license_key) + "</td>" +
                     "<td>" + (active ? '<span class="text-[#7ef0d0]">Active</span>' : '<span class="text-[#ff8a8a]">Revoked</span>') + "</td>" +
                     "<td>" + (p.hardware_id ? esc(String(p.hardware_id).slice(0, 12)) + "…" : '<span class="text-gray-500">unbound</span>') + "</td>" +
+                    "<td class='text-gray-400'>" + (p.app_version ? esc(p.app_version) : '<span class="text-gray-600">—</span>') + "</td>" +
                     "<td class='text-gray-400'>" + esc(fmtDate(p.created_at)) + "</td>" +
                     "<td class='whitespace-nowrap'>" +
                     (active
@@ -305,6 +328,9 @@
             }).join("");
         }
         document.getElementById("reloadPurchasers").addEventListener("click", loadPurchasers);
+        document.getElementById("purchaserSearch").addEventListener("keydown", function (e) {
+            if (e.key === "Enter") { e.preventDefault(); loadPurchasers(); }
+        });
         document.getElementById("purchaserRows").addEventListener("click", async function (e) {
             var t = e.target.closest("button");
             if (!t) return;
@@ -339,8 +365,8 @@
                 return;
             }
             var rows = res.feedback || [];
-            var fresh = rows.filter(function (f) { return f.status === "new"; }).length;
-            document.getElementById("fbCount").textContent = rows.length ? "(" + rows.length + (fresh ? ", " + fresh + " new" : "") + ")" : "";
+            var fresh = rows.filter(function (f) { return f.status === "pending"; }).length;
+            document.getElementById("fbCount").textContent = rows.length ? "(" + rows.length + (fresh ? ", " + fresh + " pending" : "") + ")" : "";
             if (!rows.length) {
                 list.innerHTML = '<p class="text-gray-500 font-light">Inbox zero. Nothing here.</p>';
                 return;
@@ -350,14 +376,15 @@
                     '<div class="flex flex-wrap items-center gap-2 mb-2">' +
                     '<span class="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full ' + (f.tier === "black" ? "badge-glow" : "border border-white/15 bg-white/5 text-gray-300") + '">' + esc(f.tier) + "</span>" +
                     '<span class="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full border border-white/15 bg-white/5 text-gray-300">' + esc(f.kind) + "</span>" +
-                    '<span class="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full border border-white/15 bg-white/5 ' + (f.status === "new" ? "text-[#ff8a8a]" : f.status === "reviewed" ? "text-[#f0d27e]" : "text-[#7ef0d0]") + '">' + esc(f.status) + "</span>" +
+                    '<span class="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full border border-white/15 bg-white/5 ' + (f.status === "pending" ? "text-[#ff8a8a]" : f.status === "in_progress" ? "text-[#f0d27e]" : f.status === "dismissed" ? "text-gray-500" : "text-[#7ef0d0]") + '">' + esc(f.status) + "</span>" +
                     '<span class="text-xs text-gray-500 ml-auto">' + esc(fmtDate(f.created_at)) + "</span></div>" +
                     '<h3 class="font-semibold tracking-tight mb-1">' + esc(f.title) + "</h3>" +
                     '<p class="text-sm text-gray-300 font-light whitespace-pre-wrap mb-3">' + esc(f.body) + "</p>" +
                     '<p class="text-xs text-gray-500 mb-3">' + esc(f.email) + (f.app_version ? " · v" + esc(f.app_version) : "") + "</p>" +
-                    '<div class="flex gap-2">' +
-                    '<button class="squircle btn-ghost px-3 py-1.5 text-xs font-semibold" data-status="reviewed">Mark reviewed</button>' +
-                    '<button class="squircle btn-ghost px-3 py-1.5 text-xs font-semibold" data-status="resolved">Mark resolved</button>' +
+                    '<div class="flex flex-wrap gap-2">' +
+                    '<button class="squircle btn-ghost px-3 py-1.5 text-xs font-semibold" data-status="in_progress">In Progress</button>' +
+                    '<button class="squircle btn-ghost px-3 py-1.5 text-xs font-semibold" data-status="resolved">Resolved</button>' +
+                    '<button class="squircle btn-ghost px-3 py-1.5 text-xs font-semibold" data-status="dismissed">Dismiss</button>' +
                     "</div></article>";
             }).join("");
         }
@@ -483,6 +510,29 @@
             dashMsg(res && res.success ? "Updated." : ("Failed: " + ((res && res.error) || "unknown")), !!(res && res.success));
             loadAnnouncements();
         });
+
+        // ---- Audit log ----
+        async function loadAudit() {
+            var tbody = document.getElementById("auditRows");
+            var res = await window.tweakrAuth.adminCall("audit", {});
+            if (!res || !res.success) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-[#ff8a8a]">' + esc((res && res.error) || "Load failed.") + "</td></tr>";
+                return;
+            }
+            var rows = res.audit || [];
+            if (!rows.length) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-gray-500 font-light">No admin actions recorded yet.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = rows.map(function (a) {
+                return "<tr>" +
+                    "<td class='text-gray-400 whitespace-nowrap'>" + esc(fmtDate(a.created_at)) + "</td>" +
+                    "<td class='text-white'>" + esc(a.actor) + "</td>" +
+                    "<td><span class='px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full border border-[#00f2fe]/40 bg-[#00f2fe]/5 text-[#00f2fe]'>" + esc(a.action) + "</span></td>" +
+                    "<td class='text-gray-300 font-light'>" + esc(a.detail || "—") + "</td></tr>";
+            }).join("");
+        }
+        document.getElementById("reloadAudit").addEventListener("click", loadAudit);
 
         boot();
     </script>

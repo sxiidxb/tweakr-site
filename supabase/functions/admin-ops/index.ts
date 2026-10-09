@@ -87,13 +87,28 @@ serve(async (req: Request) => {
   try { body = await req.json(); } catch { body = {}; }
   const action = body.action;
 
-  // ---------- PURCHASERS ----------
+  async function audit(act: string, detail: string | null) {
+    try {
+      await admin.from("admin_audit").insert({ actor: ADMIN_EMAIL, action: act, detail });
+    } catch (e) {
+      console.error("audit insert failed:", e);
+    }
+  }
+
+  const FEEDBACK_STATUSES = ["pending", "in_progress", "resolved", "dismissed"];
+
+  // ---------- PURCHASERS (supports ?search=email-or-key) ----------
   if (action === "purchasers") {
-    const { data, error } = await admin
+    let q = admin
       .from("licenses")
-      .select("email, tier, license_key, coupon, payment_ref, hardware_id, is_active, created_at")
+      .select("email, tier, license_key, coupon, payment_ref, hardware_id, app_version, is_active, created_at")
       .order("created_at", { ascending: false })
       .limit(500);
+    if (typeof body.search === "string" && body.search.trim().length >= 2) {
+      const s = "%" + body.search.trim().replace(/[%_]/g, "") + "%";
+      q = q.or("email.ilike." + s + ",license_key.ilike." + s);
+    }
+    const { data, error } = await q;
     if (error) return json({ success: false, error: "Database error: " + error.message }, 500, origin);
     return json({ success: true, purchasers: data || [] }, 200, origin);
   }
@@ -110,6 +125,7 @@ serve(async (req: Request) => {
       .update({ is_active: isActive })
       .eq("license_key", key.trim().toUpperCase());
     if (error) return json({ success: false, error: "Database error: " + error.message }, 500, origin);
+    await audit(isActive ? "license_reactivate" : "license_revoke", key.trim().toUpperCase());
     return json({ success: true, is_active: isActive }, 200, origin);
   }
 
@@ -124,6 +140,7 @@ serve(async (req: Request) => {
       .update({ hardware_id: null })
       .eq("license_key", key.trim().toUpperCase());
     if (error) return json({ success: false, error: "Database error: " + error.message }, 500, origin);
+    await audit("hwid_reset", key.trim().toUpperCase());
     return json({ success: true }, 200, origin);
   }
 
@@ -162,10 +179,12 @@ serve(async (req: Request) => {
         }
         return json({ success: false, error: "Database error: " + error.message }, 500, origin);
       }
+      await audit("user_ban", norm + (reason ? " — " + reason : ""));
       return json({ success: true, banned: true }, 200, origin);
     }
     const { error } = await admin.from("bans").delete().eq("email", norm);
     if (error) return json({ success: false, error: "Database error: " + error.message }, 500, origin);
+    await audit("user_unban", norm);
     return json({ success: true, banned: false }, 200, origin);
   }
 
@@ -177,13 +196,14 @@ serve(async (req: Request) => {
     }
     const { error } = await admin.auth.admin.deleteUser(userId);
     if (error) return json({ success: false, error: "Could not delete user: " + error.message }, 500, origin);
+    await audit("user_delete", userId);
     return json({ success: true }, 200, origin);
   }
 
   // ---------- FEEDBACK INBOX ----------
   if (action === "feedback") {
     let q = admin.from("feedback").select("*").order("created_at", { ascending: false }).limit(500);
-    if (body.status === "new" || body.status === "reviewed" || body.status === "resolved") {
+    if (FEEDBACK_STATUSES.includes(body.status as string)) {
       q = q.eq("status", body.status as string);
     }
     if (body.tier === "grey" || body.tier === "black") {
@@ -202,11 +222,12 @@ serve(async (req: Request) => {
   if (action === "set_feedback") {
     const id = body.id;
     const status = body.status;
-    if (typeof id !== "string" || !["new", "reviewed", "resolved"].includes(status as string)) {
+    if (typeof id !== "string" || !FEEDBACK_STATUSES.includes(status as string)) {
       return json({ success: false, error: "Valid id and status are required." }, 400, origin);
     }
     const { error } = await admin.from("feedback").update({ status }).eq("id", id);
     if (error) return json({ success: false, error: "Database error: " + error.message }, 500, origin);
+    await audit("feedback_status", (status as string) + " — " + id);
     return json({ success: true }, 200, origin);
   }
 
@@ -241,6 +262,7 @@ serve(async (req: Request) => {
       }
       return json({ success: false, error: "Database error: " + error.message }, 500, origin);
     }
+    await audit("announce", "[" + audience + "] " + message.trim().slice(0, 120));
     return json({ success: true }, 200, origin);
   }
 
@@ -251,7 +273,21 @@ serve(async (req: Request) => {
     }
     const { error } = await admin.from("announcements").update({ active: body.active === true }).eq("id", id);
     if (error) return json({ success: false, error: "Database error: " + error.message }, 500, origin);
+    await audit(body.active === true ? "announce_republish" : "announce_takedown", id);
     return json({ success: true }, 200, origin);
+  }
+
+  // ---------- AUDIT LOG ----------
+  if (action === "audit") {
+    const { data, error } = await admin
+      .from("admin_audit").select("*").order("created_at", { ascending: false }).limit(200);
+    if (error) {
+      if (missingTable(error)) {
+        return json({ success: false, error: "Run migration 20261008000005_admin_audit.sql first." }, 500, origin);
+      }
+      return json({ success: false, error: "Database error: " + error.message }, 500, origin);
+    }
+    return json({ success: true, audit: data || [] }, 200, origin);
   }
 
   return json({ success: false, error: "Unknown action." }, 400, origin);

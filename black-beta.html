@@ -106,51 +106,7 @@
             </div>
         </div>
 
-        <!-- Beta content -->
-        <div id="betaState" class="hidden w-full max-w-3xl space-y-8">
-            <div class="squircle glass-panel p-8">
-                <div class="flex items-center gap-3 mb-2">
-                    <h2 class="text-2xl font-semibold tracking-tight">Pre-release Black builds</h2>
-                    <span class="px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full badge-glow">Verified</span>
-                </div>
-                <p class="text-gray-400 font-light mb-6">Testing as <span id="betaEmail" class="text-white"></span>. These builds are ahead of stable — report anything odd below.</p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <a href="{{ site.baseurl }}/downloads/TWEAKR BLACK_0.1.0_x64-setup.exe" download class="squircle btn-blue block text-center py-4 px-6 font-semibold tracking-wide shadow-lg">Download Beta EXE</a>
-                    <a href="{{ site.baseurl }}/downloads/TWEAKR BLACK_0.1.0_x64_en-US.msi" download class="squircle btn-ghost block text-center py-4 px-6 font-semibold tracking-wide">Download Beta MSI</a>
-                </div>
-            </div>
-
-            <div class="squircle glass-panel p-8">
-                <h2 class="text-2xl font-semibold tracking-tight mb-2">Report a bug / request a feature</h2>
-                <p class="text-gray-400 font-light mb-6">Goes straight to the admin inbox, tagged Black tier.</p>
-                <form id="fbForm" class="space-y-4" novalidate>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-[10px] uppercase tracking-[0.18em] text-gray-500 mb-2 font-medium">Type</label>
-                            <select id="fbKind" class="auth-field w-full rounded-lg px-4 py-3 text-sm">
-                                <option value="bug">Bug report</option>
-                                <option value="feature">Feature request</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-[10px] uppercase tracking-[0.18em] text-gray-500 mb-2 font-medium">App version (optional)</label>
-                            <input id="fbVersion" type="text" placeholder="e.g. 0.1.0" class="auth-field w-full rounded-lg px-4 py-3 text-sm" />
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] uppercase tracking-[0.18em] text-gray-500 mb-2 font-medium">Title</label>
-                        <input id="fbTitle" type="text" placeholder="Short summary" class="auth-field w-full rounded-lg px-4 py-3 text-sm" />
-                    </div>
-                    <div>
-                        <label class="block text-[10px] uppercase tracking-[0.18em] text-gray-500 mb-2 font-medium">Details</label>
-                        <textarea id="fbBody" rows="5" placeholder="What happened, steps to reproduce, what you expected…" class="auth-field w-full rounded-lg px-4 py-3 text-sm"></textarea>
-                    </div>
-                    <p id="fbError" class="text-sm text-[#ff8a8a] font-light"></p>
-                    <p id="fbOk" class="text-sm text-[#7ef0d0] font-light"></p>
-                    <button type="submit" id="fbBtn" class="squircle btn-blue py-3.5 px-6 font-semibold tracking-wide shadow-lg">Send feedback</button>
-                </form>
-            </div>
-        </div>
+        <!-- Beta content lives on the access page (shown after unlock) -->
 
         <div class="w-full max-w-3xl mt-10 text-center text-sm text-gray-500 font-light">
             <a href="{{ site.baseurl }}/" class="hover:text-white transition-colors">Home</a>
@@ -161,23 +117,22 @@
         </div>
     </main>
 
+    <script src="{{ site.baseurl }}/assets/banner.js" data-audience="black"></script>
     <script src="{{ site.baseurl }}/assets/auth.js"></script>
     <script>
         var VERIFY_URL = "https://vtonvtzhtkwksydpilwf.supabase.co/functions/v1/verify-license";
-        var unlocked = null; // { email, key }
 
-        function unlock(email, key) {
-            unlocked = { email: email, key: key };
-            try { sessionStorage.setItem("black_beta", JSON.stringify(unlocked)); } catch (e) {}
-            document.getElementById("gateState").classList.add("hidden");
-            document.getElementById("betaState").classList.remove("hidden");
-            document.getElementById("betaEmail").textContent = email;
+        // A verified key takes you to the beta access page, which re-verifies
+        // live and shows current progress + feedback.
+        function goAccess(email, key) {
+            var params = new URLSearchParams({ email: email, key: key });
+            window.location.href = "{{ site.baseurl }}/black-beta-access?" + params.toString();
         }
 
-        // Restore an already-verified session without asking again.
+        // If this browser already unlocked, skip the gate.
         try {
             var saved = JSON.parse(sessionStorage.getItem("black_beta") || "null");
-            if (saved && saved.email && saved.key) unlock(saved.email, saved.key);
+            if (saved && saved.email && saved.key) goAccess(saved.email, saved.key);
         } catch (e) {}
 
         document.getElementById("gateBtn").addEventListener("click", async function () {
@@ -197,7 +152,8 @@
                 });
                 var data = await resp.json();
                 if (data && data.success && (data.tier === "full" || data.tier === "starter")) {
-                    unlock(email, key);
+                    try { sessionStorage.setItem("black_beta", JSON.stringify({ email: email, key: key })); } catch (e) {}
+                    goAccess(email, key);
                 } else {
                     errEl.textContent = (data && data.error) || "That key did not verify. Check it and try again.";
                 }
@@ -205,43 +161,6 @@
                 errEl.textContent = "Network error. Check your connection and try again.";
             }
             btn.disabled = false;
-        });
-
-        document.getElementById("fbForm").addEventListener("submit", async function (e) {
-            e.preventDefault();
-            var errEl = document.getElementById("fbError");
-            var okEl = document.getElementById("fbOk");
-            var btn = document.getElementById("fbBtn");
-            errEl.textContent = ""; okEl.textContent = "";
-            if (!unlocked) { errEl.textContent = "Verify your license first."; return; }
-            var payload = {
-                tier: "black",
-                kind: document.getElementById("fbKind").value,
-                title: document.getElementById("fbTitle").value.trim(),
-                body: document.getElementById("fbBody").value.trim(),
-                app_version: document.getElementById("fbVersion").value.trim(),
-                license_key: unlocked.key
-            };
-            if (payload.title.length < 3) { errEl.textContent = "Give it a short title (3+ characters)."; return; }
-            if (payload.body.length < 10) { errEl.textContent = "Add a few more details (10+ characters)."; return; }
-            btn.disabled = true;
-            // Black feedback posts through the signed-in account if present,
-            // otherwise through a lightweight license-tied path: sign the
-            // caller in silently? No — require a free account (one click).
-            var session = window.tweakrAuth && window.tweakrAuth.getSession();
-            if (!session) {
-                errEl.textContent = "Create a free account first (one click) — your key stays linked to it.";
-                btn.disabled = false;
-                return;
-            }
-            var res = await window.tweakrAuth.submitFeedback(payload);
-            btn.disabled = false;
-            if (res && res.success) {
-                okEl.textContent = "Thanks — your feedback is in. We read everything.";
-                document.getElementById("fbForm").reset();
-            } else {
-                errEl.textContent = (res && res.error) || "Could not send feedback. Try again.";
-            }
         });
     </script>
     <script src="{{ site.baseurl }}/assets/auth-nav.js"></script>

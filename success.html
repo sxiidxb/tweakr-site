@@ -105,10 +105,6 @@
             <p class="text-lg text-gray-400 font-light tracking-wide">
                 <span id="successSubtitle">Thanks <span id="buyerEmail" class="text-white">friend</span>! Your app and license key are below. Keep this page open until you're set up.</span>
             </p>
-            <div id="couponBanner" class="hidden mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wider badge-glow">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                <span id="couponBannerText">Coupon applied</span>
-            </div>
         </div>
 
         <div class="w-full max-w-2xl space-y-8">
@@ -171,7 +167,6 @@
         const params = new URLSearchParams(window.location.search);
         const key = params.get("key");
         const email = params.get("email");
-        const coupon = params.get("coupon");
 
         if (key) {
             document.getElementById("licenseKeyText").innerText = key;
@@ -181,19 +176,6 @@
 
         if (email) {
             document.getElementById("buyerEmail").innerText = email;
-        }
-
-        // If the user arrived via a coupon, tweak the headline + show a banner.
-        if (coupon) {
-            const title = document.getElementById("successTitle");
-            const subtitle = document.getElementById("successSubtitle");
-            const banner = document.getElementById("couponBanner");
-            const bannerText = document.getElementById("couponBannerText");
-
-            title.textContent = "You're in";
-            subtitle.innerHTML = "Thanks <span id=\"buyerEmail\" class=\"text-white\">" + (email || "friend") + "</span>! Your Tweakr Black license is unlocked below. Welcome aboard.";
-            bannerText.textContent = "Code \"" + coupon + "\" applied — free access";
-            banner.classList.remove("hidden");
         }
 
         // If the visitor isn't signed in and we know the buyer's email, surface

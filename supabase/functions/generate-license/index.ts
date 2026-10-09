@@ -73,13 +73,6 @@ const isTestPayment = (paymentRef) => {
   );
 };
 
-const FREE_COUPONS = new Set(["FIRST100", "100SAI"]);
-
-const isFreeCoupon = (coupon) => {
-  if (!coupon) return false;
-  return FREE_COUPONS.has(coupon.trim().toUpperCase());
-};
-
 serve(async (req) => {
   const origin = req.headers.get("Origin");
 
@@ -92,7 +85,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}));
-    const { email, tier, paymentRef, coupon } = body;
+    const { email, tier, paymentRef } = body;
 
     if (!isValidEmail(email)) {
       return jsonResponse({ success: false, error: "Please enter a valid email address." }, 400, origin);
@@ -104,19 +97,7 @@ serve(async (req) => {
       return jsonResponse({ success: false, error: "Missing or invalid payment reference." }, 400, origin);
     }
 
-    let normalisedCoupon = null;
-    if (coupon !== undefined && coupon !== null && coupon !== "") {
-      if (typeof coupon !== "string") {
-        return jsonResponse({ success: false, error: "Invalid coupon field." }, 400, origin);
-      }
-      const upper = coupon.trim().toUpperCase();
-      if (!FREE_COUPONS.has(upper)) {
-        return jsonResponse({ success: false, error: "Coupon code is not valid or has expired." }, 400, origin);
-      }
-      normalisedCoupon = upper;
-    }
-
-    const skipVerification = isTestPayment(paymentRef) || normalisedCoupon !== null;
+    const skipVerification = isTestPayment(paymentRef);
 
     if (!skipVerification) {
       // TODO: Add real PayPal order verification here before going to production.
@@ -160,14 +141,13 @@ serve(async (req) => {
         licenseKey: existing.license_key,
         tier,
         email: normalisedEmail,
-        coupon: normalisedCoupon,
         alreadyOwned: true,
       }, 200, origin);
     }
 
     // Strict 1-license limit: one active Tweakr Black license per email.
     // If this email already owns an active key, hand that key back instead
-    // of minting a second one (works for paid + coupon flows alike).
+    // of minting a second one.
     const { data: owned, error: ownedError } = await supabase
       .from("licenses")
       .select("license_key,tier,email")
@@ -188,7 +168,6 @@ serve(async (req) => {
         licenseKey: (owned as { license_key: string }).license_key,
         tier: (owned as { tier: string }).tier,
         email: normalisedEmail,
-        coupon: normalisedCoupon,
         alreadyOwned: true,
       }, 200, origin);
     }
@@ -199,7 +178,6 @@ serve(async (req) => {
       license_key: licenseKey,
       payment_ref: normalisedPaymentRef,
     };
-    if (normalisedCoupon) insertRow.coupon = normalisedCoupon;
 
     const { error: dbError } = await supabase.from("licenses").insert(insertRow);
 
@@ -219,7 +197,6 @@ serve(async (req) => {
       licenseKey,
       tier,
       email: normalisedEmail,
-      coupon: normalisedCoupon,
     }, 200, origin);
 
   } catch (err) {

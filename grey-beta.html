@@ -100,11 +100,12 @@
         <!-- Beta content -->
         <div id="betaState" class="hidden w-full max-w-3xl space-y-8">
             <div class="squircle glass-panel p-8">
-                <h2 class="text-2xl font-semibold tracking-tight mb-2">Experimental Grey builds</h2>
+                <h2 class="text-2xl font-semibold tracking-tight mb-2">Experimental Grey builds <span class="text-[#00f2fe]">v3.0</span></h2>
                 <p class="text-gray-400 font-light mb-6">Test builds with the newest free features. They may be rough — that is the point.</p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <a href="{{ site.baseurl }}/downloads/Tweakr_2.0.0_x64-setup.exe" download class="squircle btn-blue block text-center py-4 px-6 font-semibold tracking-wide shadow-lg">Download Beta EXE</a>
-                    <a href="{{ site.baseurl }}/downloads/Tweakr_2.0.0_x64_en-US.msi" download class="squircle btn-ghost block text-center py-4 px-6 font-semibold tracking-wide">Download Beta MSI</a>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <a href="{{ site.baseurl }}/downloads/Tweakr_3.0.0_x64-setup.exe" download class="squircle btn-blue block text-center py-4 px-6 font-semibold tracking-wide shadow-lg">Download EXE</a>
+                    <a href="{{ site.baseurl }}/downloads/Tweakr_3.0.0_x64_en-US.msi" download class="squircle btn-ghost block text-center py-4 px-6 font-semibold tracking-wide">Download MSI</a>
+                    <a href="{{ site.baseurl }}/downloads/Tweakr_3.0.0_Portable.exe" download class="squircle btn-ghost block text-center py-4 px-6 font-semibold tracking-wide">Portable EXE</a>
                 </div>
             </div>
 
@@ -149,6 +150,7 @@
         </div>
     </main>
 
+    <script src="{{ site.baseurl }}/assets/banner.js" data-audience="grey"></script>
     <script src="{{ site.baseurl }}/assets/auth.js"></script>
     <script>
         (function () {

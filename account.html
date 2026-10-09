@@ -127,6 +127,7 @@
         </div>
     </main>
 
+    <script src="{{ site.baseurl }}/assets/banner.js" data-audience="all"></script>
     <script src="{{ site.baseurl }}/assets/auth.js"></script>
     <script>
         (function () {
@@ -165,7 +166,6 @@
             function renderLicense(lic) {
                 const tier = (lic.tier || "full").toLowerCase();
                 const tierLabel = tier === "starter" ? "Starter Tier" : "Full Plus Tier";
-                const coupon = lic.coupon ? `<span class="px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full badge-glass">via ${lic.coupon}</span>` : "";
                 const activeBadge = lic.is_active === false
                     ? `<span class="px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full" style="border:1px solid rgba(255,99,99,0.5);color:#ff8a8a;background:rgba(255,99,99,0.08);">Revoked</span>`
                     : "";
@@ -174,7 +174,6 @@
                 card.innerHTML = `
                     <div class="flex flex-wrap items-center gap-3 mb-3">
                         <span class="px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full badge-glow">${tierLabel}</span>
-                        ${coupon}
                         ${activeBadge}
                         <span class="text-xs text-gray-500 ml-auto">Activated ${formatDate(lic.created_at)}</span>
                     </div>
