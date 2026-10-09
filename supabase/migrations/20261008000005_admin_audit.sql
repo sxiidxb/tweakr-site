@@ -37,6 +37,7 @@ end $$;
 alter table public.feedback
   add constraint feedback_status_check
   check (status in ('pending', 'in_progress', 'resolved', 'dismissed'));
+alter table public.feedback alter column status set default 'pending';
 
 -- 3. Track which app version a license last checked in with.
 alter table public.licenses add column if not exists app_version text;
