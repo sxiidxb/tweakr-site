@@ -1,3 +1,5 @@
+---
+---
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
@@ -166,7 +168,7 @@
     <main class="container mx-auto px-6 py-16 relative z-10 min-h-screen flex flex-col items-center">
         <!-- Top Navigation -->
         <div class="w-full max-w-3xl mb-12 flex justify-between items-center">
-            <a href="index.html" class="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+            <a href="{{ site.baseurl }}/" class="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
@@ -256,6 +258,19 @@
                         </button>
                     </div>
                     <p id="couponMessage" class="coupon-msg text-xs mt-2 h-4 font-light"></p>
+                    <div id="couponEmailRow" class="hidden mt-1">
+                        <label for="couponEmail" class="block text-[10px] uppercase tracking-[0.18em] text-gray-500 mb-2 font-medium">
+                            Email for your license
+                        </label>
+                        <input
+                            type="email"
+                            id="couponEmail"
+                            placeholder="you@example.com"
+                            autocomplete="email"
+                            spellcheck="false"
+                            class="coupon-field w-full rounded-lg px-4 py-2.5 text-sm font-medium tracking-wide"
+                        />
+                    </div>
                 </div>
 
                 <div class="z-10 mt-auto">
@@ -317,6 +332,8 @@
         const paypalContainer = document.getElementById("paypal-button-container-full");
         const freeAccessBtn   = document.getElementById("freeAccessBtn");
         const freeAccessLabel = document.getElementById("freeAccessBtnLabel");
+        const couponEmailRow  = document.getElementById("couponEmailRow");
+        const couponEmail     = document.getElementById("couponEmail");
 
         function showLoading() {
             document.getElementById("loadingOverlay").classList.remove("hidden");
@@ -374,8 +391,9 @@
             priceLabel.innerHTML = '<span class="price-strike">$' + ORIGINAL_PRICE.toFixed(2) + '</span> &nbsp; $' + FINAL_PRICE.toFixed(2);
             priceChip.classList.add("price-swap");
 
-            // Swap checkout: hide PayPal, show free-access CTA
+            // Swap checkout: hide PayPal, show email field + free-access CTA
             paypalContainer.classList.add("hidden");
+            couponEmailRow.classList.remove("hidden");
             freeAccessBtn.classList.remove("hidden");
             freeAccessLabel.textContent = "Get Tweakr Black — Free";
 
@@ -392,6 +410,10 @@
             applyBtn.textContent = "Apply";
             couponBadge.classList.add("hidden");
             priceLabel.textContent = "$" + ORIGINAL_PRICE.toFixed(2);
+            // Hide + clear the coupon email field
+            couponEmailRow.classList.add("hidden");
+            couponEmail.value = "";
+            setInputState("neutral");
             // Restore PayPal button
             paypalContainer.classList.remove("hidden");
             freeAccessBtn.classList.add("hidden");
@@ -420,7 +442,7 @@
                         tier: tier
                     });
                     if (coupon) params.set("coupon", coupon);
-                    window.location.href = "success.html?" + params.toString();
+                    window.location.href = "{{ site.baseurl }}/success?" + params.toString();
                 } else {
                     const errMsg = data.error || "Unknown error";
                     alert("License generation failed: " + errMsg + "\nOrder ID: " + paymentRef);
@@ -449,15 +471,13 @@
         });
 
         // --- Free-access CTA (replaces PayPal when a 100% coupon is applied) ---
-        // We need an email to mint the license. Prompt politely via a small modal-ish
-        // inline flow using prompt() for simplicity (keeps the page self-contained).
+        // Email is collected inline above — no popups, no redirects away.
         freeAccessBtn.addEventListener("click", () => {
             if (!appliedCoupon) return;
-            const email = window.prompt("Enter the email you'd like your Tweakr Black license sent to:");
-            if (!email) return;
-            const trimmed = email.trim();
+            const trimmed = (couponEmail.value || "").trim();
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-                alert("Please enter a valid email address.");
+                setCouponMessage("Please enter a valid email address for your license.", "error");
+                couponEmail.focus();
                 return;
             }
             const paymentRef = "COUPON_" + appliedCoupon.code.toUpperCase() + "_" + Date.now();
@@ -489,7 +509,7 @@
         }
         mountPayPalButton();
     </script>
-    <script src="./assets/auth.js"></script>
-    <script src="./assets/auth-nav.js"></script>
+    <script src="{{ site.baseurl }}/assets/auth.js"></script>
+    <script src="{{ site.baseurl }}/assets/auth-nav.js"></script>
 </body>
 </html>

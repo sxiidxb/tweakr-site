@@ -1,3 +1,5 @@
+---
+---
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
@@ -74,7 +76,7 @@
     <main class="container mx-auto px-6 py-16 relative z-10 min-h-screen flex flex-col items-center">
         <!-- Top nav -->
         <div class="w-full max-w-3xl mb-12 flex justify-between items-center text-sm">
-            <a href="index.html" class="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+            <a href="{{ site.baseurl }}/" class="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                 <span class="font-medium tracking-wide">Home</span>
             </a>
@@ -97,7 +99,7 @@
             <div class="squircle glass-panel p-8 text-center">
                 <h2 class="text-2xl font-semibold tracking-tight mb-2">No licenses yet</h2>
                 <p class="text-gray-400 font-light mb-6">We couldn't find any Tweakr Black licenses on this email.</p>
-                <a href="purchase.html" class="squircle btn-blue inline-block py-3.5 px-6 font-semibold tracking-wide shadow-lg">Get Tweakr Black</a>
+                <a href="{{ site.baseurl }}/purchase" class="squircle btn-blue inline-block py-3.5 px-6 font-semibold tracking-wide shadow-lg">Get Tweakr Black</a>
             </div>
         </div>
 
@@ -120,18 +122,18 @@
                     <h3 class="text-lg font-semibold tracking-tight mb-1">Need Tweakr Grey?</h3>
                     <p class="text-sm text-gray-400 font-light">It's free. Download the installer below.</p>
                 </div>
-                <a href="download.html" class="squircle btn-blue inline-block py-3 px-6 font-semibold tracking-wide shadow-lg text-center">Download Grey</a>
+                <a href="{{ site.baseurl }}/download" class="squircle btn-blue inline-block py-3 px-6 font-semibold tracking-wide shadow-lg text-center">Download Grey</a>
             </div>
         </div>
     </main>
 
-    <script src="./assets/auth.js"></script>
+    <script src="{{ site.baseurl }}/assets/auth.js"></script>
     <script>
         (function () {
             const session = window.tweakrAuth.getSession();
             if (!session) {
                 // Not signed in — bounce to login with a return URL.
-                window.location.replace("login.html?next=account.html");
+                window.location.replace("{{ site.baseurl }}/login?next={{ site.baseurl }}/account");
                 return;
             }
 
@@ -237,7 +239,7 @@
             retryBtn.addEventListener("click", load);
             logoutBtn.addEventListener("click", async function () {
                 await window.tweakrAuth.logout();
-                window.location.href = "index.html";
+                window.location.href = "{{ site.baseurl }}/";
             });
 
             load();

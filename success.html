@@ -1,3 +1,5 @@
+---
+---
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
@@ -86,7 +88,7 @@
     <main class="container mx-auto px-6 py-16 relative z-10 min-h-screen flex flex-col items-center">
         <!-- Top nav -->
         <div class="w-full max-w-3xl mb-8 flex justify-between items-center text-sm">
-            <a href="index.html" class="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+            <a href="{{ site.baseurl }}/" class="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                 <span class="font-medium tracking-wide">Home</span>
             </a>
@@ -116,7 +118,7 @@
                     <h3 class="text-lg font-semibold tracking-tight mb-1">Save this license to your account</h3>
                     <p class="text-sm text-gray-400 font-light">Create a free Tweakr account so you can recover this key any time, on any device.</p>
                 </div>
-                <a id="saveLicenseLink" href="signup.html" class="squircle save-cta-btn inline-block py-3 px-6 text-center font-semibold tracking-wide whitespace-nowrap">Create account</a>
+                <a id="saveLicenseLink" href="{{ site.baseurl }}/signup" class="squircle save-cta-btn inline-block py-3 px-6 text-center font-semibold tracking-wide whitespace-nowrap">Create account</a>
             </div>
 
             <!-- License key card -->
@@ -142,10 +144,10 @@
                 <p class="text-gray-400 font-light mb-6">Pick the file that suits you. Both install the same app.</p>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- TODO: drop the real installer files next to this page (or in ./downloads/) and keep these file names -->
-                    <a href="./downloads/TWEAKR-BLACK_0.1.0_x64-setup.exe" download class="squircle btn-blue block text-center py-4 px-6 font-semibold tracking-wide shadow-lg">
+                    <a href="{{ site.baseurl }}/downloads/TWEAKR BLACK_0.1.0_x64-setup.exe" download class="squircle btn-blue block text-center py-4 px-6 font-semibold tracking-wide shadow-lg">
                         Download EXE
                     </a>
-                    <a href="./downloads/TWEAKR-BLACK_0.1.0_x64_en-US.msi" download class="squircle block text-center py-4 px-6 font-semibold tracking-wide border border-white/20 bg-white/5 hover:bg-white/10 transition-all">
+                    <a href="{{ site.baseurl }}/downloads/TWEAKR BLACK_0.1.0_x64_en-US.msi" download class="squircle block text-center py-4 px-6 font-semibold tracking-wide border border-white/20 bg-white/5 hover:bg-white/10 transition-all">
                         Download MSI
                     </a>
                 </div>
@@ -157,14 +159,14 @@
             </div>
 
             <div class="text-center">
-                <a href="index.html" class="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+                <a href="{{ site.baseurl }}/" class="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
                     <span class="font-medium tracking-wide">Back to Home</span>
                 </a>
             </div>
         </div>
     </main>
 
-    <script src="./assets/auth.js"></script>
+    <script src="{{ site.baseurl }}/assets/auth.js"></script>
     <script>
         const params = new URLSearchParams(window.location.search);
         const key = params.get("key");
@@ -190,7 +192,7 @@
 
             title.textContent = "You're in";
             subtitle.innerHTML = "Thanks <span id=\"buyerEmail\" class=\"text-white\">" + (email || "friend") + "</span>! Your Tweakr Black license is unlocked below. Welcome aboard.";
-            bannerText.textContent = "Code \"" + coupon + "\" applied · free access";
+            bannerText.textContent = "Code \"" + coupon + "\" applied — free access";
             banner.classList.remove("hidden");
         }
 
@@ -200,7 +202,7 @@
         if (email && window.tweakrAuth && !window.tweakrAuth.isSignedIn()) {
             const card = document.getElementById("saveLicenseCard");
             const link = document.getElementById("saveLicenseLink");
-            link.href = "signup.html?email=" + encodeURIComponent(email);
+            link.href = "{{ site.baseurl }}/signup?email=" + encodeURIComponent(email);
             card.classList.remove("hidden");
         }
 
@@ -212,6 +214,6 @@
             });
         });
     </script>
-    <script src="./assets/auth-nav.js"></script>
+    <script src="{{ site.baseurl }}/assets/auth-nav.js"></script>
 </body>
 </html>

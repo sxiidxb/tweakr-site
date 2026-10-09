@@ -1,3 +1,5 @@
+---
+---
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
@@ -127,17 +129,19 @@
                 
                 <div class="z-10 mt-auto">
                     <!-- Link points to the download selection page -->
-                    <a href="download.html" class="squircle btn-blue w-full block text-center py-4 px-6 font-semibold tracking-wide shadow-lg">
+                    <a href="{{ site.baseurl }}/download" class="squircle btn-blue w-full block text-center py-4 px-6 font-semibold tracking-wide shadow-lg">
                         Get for free
                     </a>
                 </div>
             </div>
 
             <!-- Tweakr Black Edition -->
-            <div class="squircle glass-panel p-8 md:p-10 flex flex-col relative overflow-hidden">
+            <div class="squircle glass-panel p-8 md:p-10 flex flex-col relative overflow-hidden group transition-all duration-500 hover:border-[#00f2fe]/30">
+                <div class="absolute -inset-px bg-gradient-to-br from-[#00f2fe]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+
                 <div class="flex justify-between items-start mb-6 z-10">
                     <div>
-                        <h2 class="text-3xl font-semibold tracking-tight text-gray-300 mb-2 flex items-center gap-3">
+                        <h2 class="text-3xl font-semibold tracking-tight text-white mb-2 flex items-center gap-3">
                             Tweakr Black
                         </h2>
                         <span class="text-sm text-gray-500 font-medium tracking-wide">Full Plus — $15 one-time</span>
@@ -146,13 +150,13 @@
                         Available Now
                     </span>
                 </div>
-                
+
                 <p class="text-gray-400 leading-relaxed mb-10 z-10 flex-grow font-light">
                     Everything in one plan: live process control, script checks, offline fixes, a vault for your secrets, network watch, and smart tools that run on your PC. Simple enough for school projects.
                 </p>
-                
+
                 <div class="z-10 mt-auto">
-                    <a href="purchase.html" class="squircle btn-blue w-full block text-center py-4 px-6 font-semibold tracking-wide shadow-lg">
+                    <a href="{{ site.baseurl }}/purchase" class="squircle btn-blue w-full block text-center py-4 px-6 font-semibold tracking-wide shadow-lg">
                         Get Tweakr Black
                     </a>
                 </div>
@@ -160,7 +164,7 @@
 
         </div>
     </main>
-    <script src="./assets/auth.js"></script>
-    <script src="./assets/auth-nav.js"></script>
+    <script src="{{ site.baseurl }}/assets/auth.js"></script>
+    <script src="{{ site.baseurl }}/assets/auth-nav.js"></script>
 </body>
 </html>

@@ -1,0 +1,4 @@
+node_modules/
+args*.json
+_*.py
+supabase/.temp/

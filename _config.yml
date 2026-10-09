@@ -1,0 +1,17 @@
+title: Tweakr
+description: System Optimization. Redefined.
+url: https://sxiidxb.github.io
+baseurl: /tweakr-site
+theme: null
+plugins: []
+permalink: pretty
+include:
+  - assets
+  - downloads
+exclude:
+  - node_modules
+  - package.json
+  - package-lock.json
+  - run-migrations.cjs
+  - supabase
+  - "*.md"
