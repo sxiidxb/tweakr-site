@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#050507">
+    <meta name="color-scheme" content="dark">
+    <meta name="description" content="Your Tweakr account — manage your license keys, downloads, and account details.">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=(), interest-cohort=()">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self' https://vtonvtzhtkwksydpilwf.supabase.co; form-action 'self'; base-uri 'self'; object-src 'none';">
+    <title>My Licenses — Tweakr</title>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style type="text/tailwindcss">
+        @theme {
+            --font-sans: 'Plus Jakarta Sans', sans-serif;
+            --color-bg-dark: #050507;
+            --color-tweakr-blue: #00f2fe;
+        }
+        body { font-family: var(--font-sans); background-color: var(--color-bg-dark); color: #ffffff; margin: 0; min-height: 100vh; }
+        .squircle { border-radius: 22px; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .badge-glow {
+            box-shadow: 0 0 12px rgba(0, 242, 254, 0.4);
+            border: 1px solid rgba(0, 242, 254, 0.6);
+            color: #00f2fe;
+            background: rgba(0, 242, 254, 0.1);
+        }
+        .badge-glass {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .btn-blue {
+            background-color: #00f2fe; color: #000; transition: all 0.3s ease;
+        }
+        .btn-blue:hover:not(:disabled) {
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
+            transform: translateY(-2px);
+        }
+        .btn-ghost {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+            transition: all 0.3s ease;
+        }
+        .btn-ghost:hover { background: rgba(255, 255, 255, 0.08); }
+        .bg-grid {
+            background-size: 40px 40px;
+            background-image:
+                linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+        }
+        .license-key {
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            letter-spacing: 0.04em;
+        }
+        .copy-hint { color: #7ef0d0; }
+    </style>
+</head>
+<body class="bg-bg-dark text-white bg-grid relative overflow-x-hidden">
+    <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(0,242,254,0.05)_0%,transparent_50%)] pointer-events-none"></div>
+
+    <main class="container mx-auto px-6 py-16 relative z-10 min-h-screen flex flex-col items-center">
+        <!-- Top nav -->
+        <div class="w-full max-w-3xl mb-12 flex justify-between items-center text-sm">
+            <a href="index.html" class="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                <span class="font-medium tracking-wide">Home</span>
+            </a>
+            <button id="logoutBtn" class="text-gray-400 hover:text-white transition-colors font-medium tracking-wide text-sm">Sign out</button>
+        </div>
+
+        <!-- Header -->
+        <div class="w-full max-w-3xl mb-10">
+            <h1 class="text-4xl md:text-5xl font-bold tracking-tight mb-3 bg-gradient-to-br from-white via-white to-gray-500 text-transparent bg-clip-text">My Licenses</h1>
+            <p class="text-gray-400 font-light">
+                Signed in as <span id="userEmail" class="text-white">…</span>
+            </p>
+        </div>
+
+        <!-- Loading state -->
+        <div id="loadingState" class="w-full max-w-3xl text-center py-12 text-gray-500 font-light">Loading your licenses…</div>
+
+        <!-- Empty state (no licenses on this email) -->
+        <div id="emptyState" class="hidden w-full max-w-3xl">
+            <div class="squircle glass-panel p-8 text-center">
+                <h2 class="text-2xl font-semibold tracking-tight mb-2">No licenses yet</h2>
+                <p class="text-gray-400 font-light mb-6">We couldn't find any Tweakr Black licenses on this email.</p>
+                <a href="purchase.html" class="squircle btn-blue inline-block py-3.5 px-6 font-semibold tracking-wide shadow-lg">Get Tweakr Black</a>
+            </div>
+        </div>
+
+        <!-- Licenses list -->
+        <div id="licensesContainer" class="hidden w-full max-w-3xl space-y-6"></div>
+
+        <!-- Error state -->
+        <div id="errorState" class="hidden w-full max-w-3xl text-center">
+            <div class="squircle glass-panel p-8">
+                <h2 class="text-xl font-semibold tracking-tight text-[#ff8a8a] mb-2">Something went wrong</h2>
+                <p id="errorMessage" class="text-gray-400 font-light">Could not load your licenses.</p>
+                <button id="retryBtn" class="squircle btn-ghost mt-6 inline-block py-3 px-6 font-semibold tracking-wide">Try again</button>
+            </div>
+        </div>
+
+        <!-- Downloads always visible (free Grey) -->
+        <div class="w-full max-w-3xl mt-10">
+            <div class="squircle glass-panel p-6 md:p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h3 class="text-lg font-semibold tracking-tight mb-1">Need Tweakr Grey?</h3>
+                    <p class="text-sm text-gray-400 font-light">It's free. Download the installer below.</p>
+                </div>
+                <a href="download.html" class="squircle btn-blue inline-block py-3 px-6 font-semibold tracking-wide shadow-lg text-center">Download Grey</a>
+            </div>
+        </div>
+    </main>
+
+    <script src="./assets/auth.js"></script>
+    <script>
+        (function () {
+            const session = window.tweakrAuth.getSession();
+            if (!session) {
+                // Not signed in — bounce to login with a return URL.
+                window.location.replace("login.html?next=account.html");
+                return;
+            }
+
+            document.getElementById("userEmail").textContent = session.user.email || "you";
+
+            const loading = document.getElementById("loadingState");
+            const empty = document.getElementById("emptyState");
+            const errState = document.getElementById("errorState");
+            const errMsg = document.getElementById("errorMessage");
+            const container = document.getElementById("licensesContainer");
+            const retryBtn = document.getElementById("retryBtn");
+            const logoutBtn = document.getElementById("logoutBtn");
+
+            function formatDate(iso) {
+                try {
+                    const d = new Date(iso);
+                    return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+                } catch { return iso || ""; }
+            }
+
+            function mask(key) {
+                // TWEAKR-FULL-XXXXX-XXXXX-XXXXX-XXXXX  ->  TWEAKR-FULL-XXXXX-•••••-•••••-•••••
+                if (!key) return "";
+                const parts = key.split("-");
+                if (parts.length < 4) return key;
+                return parts.slice(0, 3).join("-") + "-" + parts.slice(3).map(() => "•••••").join("-");
+            }
+
+            function renderLicense(lic) {
+                const tier = (lic.tier || "full").toLowerCase();
+                const tierLabel = tier === "starter" ? "Starter Tier" : "Full Plus Tier";
+                const coupon = lic.coupon ? `<span class="px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full badge-glass">via ${lic.coupon}</span>` : "";
+                const activeBadge = lic.is_active === false
+                    ? `<span class="px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full" style="border:1px solid rgba(255,99,99,0.5);color:#ff8a8a;background:rgba(255,99,99,0.08);">Revoked</span>`
+                    : "";
+                const card = document.createElement("div");
+                card.className = "squircle glass-panel p-6 md:p-8";
+                card.innerHTML = `
+                    <div class="flex flex-wrap items-center gap-3 mb-3">
+                        <span class="px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full badge-glow">${tierLabel}</span>
+                        ${coupon}
+                        ${activeBadge}
+                        <span class="text-xs text-gray-500 ml-auto">Activated ${formatDate(lic.created_at)}</span>
+                    </div>
+                    <p class="text-gray-400 font-light text-sm mb-3">Copy this key into the app's Settings page to unlock everything.</p>
+                    <div class="bg-black/40 border border-white/10 rounded-lg p-3.5 flex items-center justify-between gap-3">
+                        <code class="license-key text-[#00f2fe] text-sm md:text-base truncate" data-full="${encodeURIComponent(lic.license_key || "")}">${mask(lic.license_key)}</code>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <button class="reveal-btn text-gray-400 hover:text-white transition-colors p-2" title="Reveal">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                            </button>
+                            <button class="copy-btn text-gray-400 hover:text-white transition-colors p-2" title="Copy to clipboard">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <p class="copy-hint text-xs h-4 mt-2 font-light"></p>
+                `;
+                const code = card.querySelector(".license-key");
+                const reveal = card.querySelector(".reveal-btn");
+                const copy = card.querySelector(".copy-btn");
+                const hint = card.querySelector(".copy-hint");
+                let revealed = false;
+                reveal.addEventListener("click", function () {
+                    revealed = !revealed;
+                    code.textContent = revealed ? decodeURIComponent(code.dataset.full) : mask(decodeURIComponent(code.dataset.full));
+                });
+                copy.addEventListener("click", async function () {
+                    const key = decodeURIComponent(code.dataset.full);
+                    try {
+                        await navigator.clipboard.writeText(key);
+                        hint.textContent = "Copied! Paste it into the app.";
+                        setTimeout(function () { hint.textContent = ""; }, 2500);
+                    } catch (e) {
+                        hint.textContent = "Could not access clipboard. Reveal and copy manually.";
+                    }
+                });
+                container.appendChild(card);
+            }
+
+            async function load() {
+                loading.classList.remove("hidden");
+                empty.classList.add("hidden");
+                errState.classList.add("hidden");
+                container.classList.add("hidden");
+                container.innerHTML = "";
+                const res = await window.tweakrAuth.fetchMyLicenses();
+                loading.classList.add("hidden");
+                if (!res || !res.success) {
+                    errMsg.textContent = (res && res.error) || "Could not load your licenses.";
+                    errState.classList.remove("hidden");
+                    return;
+                }
+                const list = (res.licenses || []).filter((l) => (l.tier || "full") === "full");
+                if (list.length === 0) {
+                    empty.classList.remove("hidden");
+                    return;
+                }
+                list.forEach(renderLicense);
+                container.classList.remove("hidden");
+            }
+
+            retryBtn.addEventListener("click", load);
+            logoutBtn.addEventListener("click", async function () {
+                await window.tweakrAuth.logout();
+                window.location.href = "index.html";
+            });
+
+            load();
+        })();
+    </script>
+</body>
+</html>

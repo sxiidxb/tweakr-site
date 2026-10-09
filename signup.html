@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#050507">
+    <meta name="color-scheme" content="dark">
+    <meta name="description" content="Create a Tweakr account to manage your license keys and recover them on any device.">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=(), interest-cohort=()">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self' https://vtonvtzhtkwksydpilwf.supabase.co; form-action 'self'; base-uri 'self'; object-src 'none';">
+    <title>Create your Tweakr account</title>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style type="text/tailwindcss">
+        @theme {
+            --font-sans: 'Plus Jakarta Sans', sans-serif;
+            --color-bg-dark: #050507;
+            --color-tweakr-blue: #00f2fe;
+        }
+        body { font-family: var(--font-sans); background-color: var(--color-bg-dark); color: #ffffff; margin: 0; min-height: 100vh; }
+        .squircle { border-radius: 22px; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .auth-field {
+            background: rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+        .auth-field::placeholder { color: rgba(255, 255, 255, 0.28); font-weight: 300; }
+        .auth-field:focus {
+            outline: none;
+            border-color: rgba(0, 242, 254, 0.6);
+            background: rgba(0, 0, 0, 0.6);
+            box-shadow: 0 0 0 1px rgba(0, 242, 254, 0.25), 0 0 18px rgba(0, 242, 254, 0.12);
+        }
+        .btn-blue {
+            background-color: #00f2fe; color: #000; transition: all 0.3s ease;
+        }
+        .btn-blue:hover:not(:disabled) { box-shadow: 0 0 20px rgba(0, 242, 254, 0.4); transform: translateY(-2px); }
+        .btn-blue:disabled { opacity: 0.5; cursor: not-allowed; }
+        .bg-grid {
+            background-size: 40px 40px;
+            background-image:
+                linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+        }
+    </style>
+</head>
+<body class="bg-bg-dark text-white bg-grid relative overflow-x-hidden">
+    <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(0,242,254,0.05)_0%,transparent_50%)] pointer-events-none"></div>
+
+    <main class="container mx-auto px-6 py-16 relative z-10 min-h-screen flex flex-col items-center">
+        <div class="w-full max-w-md mb-12 flex justify-between items-center text-sm">
+            <a href="index.html" class="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                <span class="font-medium tracking-wide">Home</span>
+            </a>
+            <span class="text-gray-500 text-xs">Have an account? <a href="login.html" class="text-[#00f2fe] hover:underline">Sign in</a></span>
+        </div>
+
+        <div class="w-full max-w-md">
+            <div class="squircle glass-panel p-8 md:p-10">
+                <h1 class="text-3xl font-semibold tracking-tight mb-2">Create your account</h1>
+                <p class="text-gray-400 font-light mb-8 text-sm">Save your license keys so you can recover them any time.</p>
+
+                <form id="signupForm" class="space-y-4" novalidate>
+                    <div>
+                        <label for="email" class="block text-[10px] uppercase tracking-[0.18em] text-gray-500 mb-2 font-medium">Email</label>
+                        <input type="email" id="email" name="email" required autocomplete="email"
+                               class="auth-field w-full rounded-lg px-4 py-3 text-sm font-medium tracking-wide" placeholder="you@example.com" />
+                    </div>
+                    <div>
+                        <label for="password" class="block text-[10px] uppercase tracking-[0.18em] text-gray-500 mb-2 font-medium">Password</label>
+                        <input type="password" id="password" name="password" required minlength="8" autocomplete="new-password"
+                               class="auth-field w-full rounded-lg px-4 py-3 text-sm font-medium tracking-wide" placeholder="At least 8 chars, letters + numbers" />
+                        <p class="text-[11px] text-gray-500 mt-1.5 font-light">Use 8+ characters with at least one letter and one number.</p>
+                    </div>
+                    <p id="formError" class="text-sm text-[#ff8a8a] h-5 font-light"></p>
+                    <button type="submit" id="submitBtn" class="squircle btn-blue w-full text-center py-3.5 px-6 font-semibold tracking-wide shadow-lg">
+                        <span id="submitLabel">Create account</span>
+                    </button>
+                </form>
+
+                <p class="text-xs text-gray-500 mt-6 font-light text-center">
+                    We never share your email. Passwords are hashed server-side.
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <script src="./assets/auth.js"></script>
+    <script>
+        (function () {
+            if (window.tweakrAuth && window.tweakrAuth.isSignedIn()) {
+                window.location.replace("account.html");
+                return;
+            }
+
+            // Pre-fill the email from ?email= (used by success.html post-purchase)
+            const params = new URLSearchParams(window.location.search);
+            const preEmail = params.get("email");
+            const next = params.get("next");
+            if (preEmail) {
+                document.getElementById("email").value = preEmail;
+            }
+
+            const form = document.getElementById("signupForm");
+            const emailEl = document.getElementById("email");
+            const passEl = document.getElementById("password");
+            const errEl = document.getElementById("formError");
+            const btn = document.getElementById("submitBtn");
+            const label = document.getElementById("submitLabel");
+
+            function setBusy(busy) {
+                btn.disabled = busy;
+                label.textContent = busy ? "Creating account…" : "Create account";
+                emailEl.disabled = busy;
+                passEl.disabled = busy;
+            }
+            function showError(msg) { errEl.textContent = msg || ""; }
+
+            form.addEventListener("submit", async function (e) {
+                e.preventDefault();
+                showError("");
+                const email = emailEl.value.trim();
+                const password = passEl.value;
+                if (!email || !password) {
+                    showError("Email and password are required.");
+                    return;
+                }
+                if (password.length < 8 || !/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+                    showError("Password must be 8+ characters with at least one letter and one number.");
+                    return;
+                }
+                setBusy(true);
+                const res = await window.tweakrAuth.signup(email, password);
+                setBusy(false);
+                if (res && res.success) {
+                    const target = (next && next.startsWith("/") === false) ? next : "account.html";
+                    window.location.href = target;
+                } else {
+                    showError((res && res.error) || "Could not create account. Please try again.");
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

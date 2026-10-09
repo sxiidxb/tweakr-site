@@ -3,6 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#050507">
+    <meta name="color-scheme" content="dark">
+    <meta name="description" content="Your Tweakr Black license key and installer downloads. Keep this page open until you've activated the app.">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=(), interest-cohort=()">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self' https://vtonvtzhtkwksydpilwf.supabase.co; form-action 'self'; base-uri 'self'; object-src 'none';">
     <title>You're in — Tweakr Black</title>
     <!-- Tailwind CSS v4 via CDN -->
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
@@ -60,12 +67,32 @@
                 linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
                 linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
         }
+        .save-cta {
+            box-shadow: 0 0 18px rgba(0, 242, 254, 0.18);
+            border: 1px solid rgba(0, 242, 254, 0.4);
+            background: linear-gradient(135deg, rgba(0, 242, 254, 0.06), rgba(0, 242, 254, 0.02));
+        }
+        .save-cta-btn {
+            background: #00f2fe;
+            color: #000;
+            transition: all 0.3s ease;
+        }
+        .save-cta-btn:hover { box-shadow: 0 0 20px rgba(0, 242, 254, 0.4); transform: translateY(-1px); }
     </style>
 </head>
 <body class="bg-bg-dark text-white bg-grid relative overflow-x-hidden">
     <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(0,242,254,0.05)_0%,transparent_50%)] pointer-events-none"></div>
 
     <main class="container mx-auto px-6 py-16 relative z-10 min-h-screen flex flex-col items-center">
+        <!-- Top nav -->
+        <div class="w-full max-w-3xl mb-8 flex justify-between items-center text-sm">
+            <a href="index.html" class="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                <span class="font-medium tracking-wide">Home</span>
+            </a>
+            <div id="authNav" class="flex items-center gap-2"></div>
+        </div>
+
         <div class="text-center mb-12 max-w-3xl mx-auto">
             <svg class="w-16 h-16 text-[#00f2fe] mb-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -83,6 +110,15 @@
         </div>
 
         <div class="w-full max-w-2xl space-y-8">
+            <!-- Save-this-license CTA (hidden when the user is already signed in) -->
+            <div id="saveLicenseCard" class="hidden save-cta squircle p-6 md:p-7 flex flex-col sm:flex-row sm:items-center gap-4">
+                <div class="flex-1">
+                    <h3 class="text-lg font-semibold tracking-tight mb-1">Save this license to your account</h3>
+                    <p class="text-sm text-gray-400 font-light">Create a free Tweakr account so you can recover this key any time, on any device.</p>
+                </div>
+                <a id="saveLicenseLink" href="signup.html" class="squircle save-cta-btn inline-block py-3 px-6 text-center font-semibold tracking-wide whitespace-nowrap">Create account</a>
+            </div>
+
             <!-- License key card -->
             <div class="squircle glass-panel p-8 flex flex-col items-center text-center">
                 <span class="px-3 py-1 text-xs font-semibold uppercase tracking-wider rounded-full badge-glow mb-4">
@@ -128,6 +164,7 @@
         </div>
     </main>
 
+    <script src="./assets/auth.js"></script>
     <script>
         const params = new URLSearchParams(window.location.search);
         const key = params.get("key");
@@ -157,6 +194,16 @@
             banner.classList.remove("hidden");
         }
 
+        // If the visitor isn't signed in and we know the buyer's email, surface
+        // the "save this license" CTA with the email pre-filled into the
+        // signup page so the new account instantly owns the license.
+        if (email && window.tweakrAuth && !window.tweakrAuth.isSignedIn()) {
+            const card = document.getElementById("saveLicenseCard");
+            const link = document.getElementById("saveLicenseLink");
+            link.href = "signup.html?email=" + encodeURIComponent(email);
+            card.classList.remove("hidden");
+        }
+
         document.getElementById("copyLicenseBtn").addEventListener("click", () => {
             const keyText = document.getElementById("licenseKeyText").innerText;
             navigator.clipboard.writeText(keyText).then(() => {
@@ -165,5 +212,6 @@
             });
         });
     </script>
+    <script src="./assets/auth-nav.js"></script>
 </body>
 </html>
