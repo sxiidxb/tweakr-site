@@ -105,6 +105,10 @@
             <p class="text-lg text-gray-400 font-light tracking-wide">
                 <span id="successSubtitle">Thanks <span id="buyerEmail" class="text-white">friend</span>! Your app and license key are below. Keep this page open until you're set up.</span>
             </p>
+            <div id="freeBanner" class="hidden mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wider badge-glow">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                <span>Free access applied</span>
+            </div>
         </div>
 
         <div class="w-full max-w-2xl space-y-8">
@@ -168,6 +172,11 @@
         const key = params.get("key");
         const email = params.get("email");
 
+        if (params.get("coupon") === "1") {
+            document.getElementById("freeBanner").classList.remove("hidden");
+            document.getElementById("successTitle").innerText = "You're in";
+        }
+
         if (key) {
             document.getElementById("licenseKeyText").innerText = key;
         } else {
@@ -196,6 +205,6 @@
             });
         });
     </script>
-    <script src="{{ site.baseurl }}/assets/auth-nav.js"></script>
+    <script src="{{ site.baseurl }}/assets/auth-nav.js?v=2"></script>
 </body>
 </html>

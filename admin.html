@@ -250,19 +250,29 @@
             if (text) setTimeout(function () { if (el.textContent === text) el.textContent = ""; }, 4000);
         }
 
+        // Blocked visitors see why, then leave automatically. Nothing here
+        // is reachable without the admin JWT — the server 403s regardless.
+        function blockAndLeave(msg) {
+            document.getElementById("gateMsg").textContent = msg;
+            setTimeout(function () {
+                window.location.replace("{{ site.baseurl }}/");
+            }, 2500);
+        }
+
         async function boot() {
             var session = window.tweakrAuth && window.tweakrAuth.getSession();
-            if (!session) return; // gate stays
+            if (!session) {
+                blockAndLeave("Sign in with the admin account to continue.");
+                return;
+            }
             if (!window.tweakrAuth.isAdmin()) {
-                document.getElementById("gateMsg").textContent =
-                    "Signed in as " + session.user.email + " — this area is restricted to the admin. You have been blocked from this page.";
+                blockAndLeave("Signed in as " + session.user.email + " — this area is restricted to the admin. Taking you home.");
                 return;
             }
             // Server is the real guard: confirm the JWT is still admin.
             var probe = await window.tweakrAuth.adminCall("announcements", {});
             if (!probe || probe.success !== true) {
-                document.getElementById("gateMsg").textContent =
-                    "Access denied by the server (" + ((probe && probe.error) || "forbidden") + ").";
+                blockAndLeave("Access denied by the server. Taking you home.");
                 return;
             }
             document.getElementById("gateState").classList.add("hidden");
@@ -312,7 +322,7 @@
             tbody.innerHTML = rows.map(function (p) {
                 var active = p.is_active !== false;
                 return "<tr>" +
-                    "<td class='text-white'>" + esc(p.email) + "</td>" +
+                    "<td class='text-white'>" + esc(p.email) + (p.coupon ? ' <span class="text-[10px] text-[#00f2fe] border border-[#00f2fe]/40 rounded-full px-2 py-0.5 ml-1">' + esc(p.coupon) + "</span>" : "") + "</td>" +
                     "<td>" + esc(p.tier) + "</td>" +
                     "<td class='license-key text-[#00f2fe]'>" + esc(p.license_key) + "</td>" +
                     "<td>" + (active ? '<span class="text-[#7ef0d0]">Active</span>' : '<span class="text-[#ff8a8a]">Revoked</span>') + "</td>" +
@@ -536,6 +546,6 @@
 
         boot();
     </script>
-    <script src="{{ site.baseurl }}/assets/auth-nav.js"></script>
+    <script src="{{ site.baseurl }}/assets/auth-nav.js?v=2"></script>
 </body>
 </html>

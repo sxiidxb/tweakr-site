@@ -89,6 +89,9 @@
             <p class="text-gray-400 font-light">
                 Signed in as <span id="userEmail" class="text-white">…</span>
             </p>
+            <div id="adminCard" class="hidden mt-5">
+                <a href="{{ site.baseurl }}/admin" class="squircle inline-block py-3 px-6 font-semibold tracking-wide text-[#00f2fe] border border-[#00f2fe]/40 bg-[#00f2fe]/5 hover:bg-[#00f2fe]/15 transition-all">Open Admin Panel</a>
+            </div>
         </div>
 
         <!-- Loading state -->
@@ -139,6 +142,11 @@
             }
 
             document.getElementById("userEmail").textContent = session.user.email || "you";
+
+            // Admin Panel button — rendered only for the owner, no one else.
+            if (window.tweakrAuth.isAdmin && window.tweakrAuth.isAdmin()) {
+                document.getElementById("adminCard").classList.remove("hidden");
+            }
 
             const loading = document.getElementById("loadingState");
             const empty = document.getElementById("emptyState");

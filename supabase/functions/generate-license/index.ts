@@ -73,6 +73,8 @@ const isTestPayment = (paymentRef) => {
   );
 };
 
+const FREE_COUPONS = new Set(["FIRST100"]);
+
 serve(async (req) => {
   const origin = req.headers.get("Origin");
 
@@ -85,7 +87,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}));
-    const { email, tier, paymentRef } = body;
+    const { email, tier, paymentRef, coupon } = body;
 
     if (!isValidEmail(email)) {
       return jsonResponse({ success: false, error: "Please enter a valid email address." }, 400, origin);
@@ -97,7 +99,27 @@ serve(async (req) => {
       return jsonResponse({ success: false, error: "Missing or invalid payment reference." }, 400, origin);
     }
 
-    const skipVerification = isTestPayment(paymentRef);
+    // Private coupon: not advertised anywhere on the site. Valid codes
+    // grant free access (still one license per email).
+    let normalisedCoupon = null;
+    if (coupon !== undefined && coupon !== null && coupon !== "") {
+      if (typeof coupon !== "string") {
+        return jsonResponse({ success: false, error: "Invalid coupon field." }, 400, origin);
+      }
+      const upper = coupon.trim().toUpperCase();
+      if (!FREE_COUPONS.has(upper)) {
+        return jsonResponse({ success: false, error: "Coupon code is not valid or has expired." }, 400, origin);
+      }
+      normalisedCoupon = upper;
+    }
+
+    const skipVerification = isTestPayment(paymentRef) || normalisedCoupon !== null;
+
+    // Dry run: validates email/tier/ref/coupon without touching the database.
+    // Used by the private code-check on the purchase page.
+    if (body.validate_only === true) {
+      return jsonResponse({ success: true, valid_coupon: normalisedCoupon !== null }, 200, origin);
+    }
 
     if (!skipVerification) {
       // TODO: Add real PayPal order verification here before going to production.
@@ -141,6 +163,7 @@ serve(async (req) => {
         licenseKey: existing.license_key,
         tier,
         email: normalisedEmail,
+        coupon: normalisedCoupon,
         alreadyOwned: true,
       }, 200, origin);
     }
@@ -168,16 +191,18 @@ serve(async (req) => {
         licenseKey: (owned as { license_key: string }).license_key,
         tier: (owned as { tier: string }).tier,
         email: normalisedEmail,
+        coupon: normalisedCoupon,
         alreadyOwned: true,
       }, 200, origin);
     }
 
-    const insertRow = {
+    const insertRow: Record<string, string> = {
       email: normalisedEmail,
       tier,
       license_key: licenseKey,
       payment_ref: normalisedPaymentRef,
     };
+    if (normalisedCoupon) insertRow.coupon = normalisedCoupon;
 
     const { error: dbError } = await supabase.from("licenses").insert(insertRow);
 
@@ -197,6 +222,7 @@ serve(async (req) => {
       licenseKey,
       tier,
       email: normalisedEmail,
+      coupon: normalisedCoupon,
     }, 200, origin);
 
   } catch (err) {
