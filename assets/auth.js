@@ -18,12 +18,19 @@
 //   auth.login(email, pwd)  -> { success, user, session, error? }
 //   auth.logout()           -> void
 //   auth.fetchMyLicenses()  -> { success, licenses, error? }
+//   auth.submitFeedback({tier, kind, title, body, app_version?, license_key?})
+//   auth.getAnnouncements(audience) -> { success, announcements, error? }
+//   auth.adminCall(action, params)  -> { success, ... } (admin JWT required)
 //   auth.endpoint           -> URL of the edge function
+//   auth.adminEndpoint      -> URL of the admin edge function
+//   auth.isAdmin()          -> best-effort client-side hint (server enforces)
 
 (function (global) {
   "use strict";
 
   const ENDPOINT = "https://vtonvtzhtkwksydpilwf.supabase.co/functions/v1/auth-handler";
+  const ADMIN_ENDPOINT = "https://vtonvtzhtkwksydpilwf.supabase.co/functions/v1/admin-ops";
+  const ADMIN_EMAIL = "quifflethebest@gmail.com";
   const STORAGE_KEY = "tweakr.session";
 
   function readSession() {
@@ -98,6 +105,47 @@
       const session = readSession();
       if (!session) return { success: false, error: "Not signed in." };
       return await call("my-licenses", {}, session);
+    },
+
+    submitFeedback: async function (fields) {
+      const session = readSession();
+      if (!session) return { success: false, error: "Sign in to send feedback." };
+      return await call("submit-feedback", fields || {}, session);
+    },
+
+    getAnnouncements: async function (audience) {
+      return await call("get-announcements", { audience: audience || "all" }, null);
+    },
+
+    isAdmin: function () {
+      const s = readSession();
+      return !!(s && s.user && (s.user.email || "").toLowerCase() === ADMIN_EMAIL);
+    },
+
+    adminCall: async function (action, params) {
+      const session = readSession();
+      if (!session) return { success: false, error: "Sign in as the admin first." };
+      const headers = { "Content-Type": "application/json" };
+      if (session.tokens && session.tokens.access_token) {
+        headers["Authorization"] = "Bearer " + session.tokens.access_token;
+      }
+      let resp;
+      try {
+        resp = await fetch(ADMIN_ENDPOINT, {
+          method: "POST",
+          headers,
+          body: JSON.stringify(Object.assign({ action }, params || {})),
+        });
+      } catch (err) {
+        return { success: false, error: "Network error. Check your connection and try again." };
+      }
+      let data;
+      try {
+        data = await resp.json();
+      } catch {
+        return { success: false, error: "Server returned an unexpected response." };
+      }
+      return data;
     },
   };
 

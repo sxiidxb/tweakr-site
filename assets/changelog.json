@@ -1,0 +1,35 @@
+{
+  "versions": [
+    {
+      "version": "v3.0",
+      "date": "2026-10-09",
+      "badge": "Major Release",
+      "changes": [
+        { "tag": "new", "text": "Tweakr Black beta portal: license-gated pre-release builds and premium feedback." },
+        { "tag": "new", "text": "Tweakr Grey beta portal: free accounts, experimental builds, bug reports." },
+        { "tag": "new", "text": "Coupon codes First100 and 100Sai for free Full Plus access." },
+        { "tag": "improvement", "text": "Strict one-license-per-email rule on purchase and coupons." },
+        { "tag": "improvement", "text": "Clean URLs across the whole site (no more .html in the address bar)." }
+      ]
+    },
+    {
+      "version": "v2.0",
+      "date": "2026-09-20",
+      "badge": "Major Release",
+      "changes": [
+        { "tag": "new", "text": "Tweakr Grey v2.0 stable: Dashboard, TidySpace file sorter, System Cleaner, Startup Manager." },
+        { "tag": "new", "text": "Tweakr Shield, System Fixes, and Monitor modules." },
+        { "tag": "improvement", "text": "Faster script execution and UI alignment fixes." }
+      ]
+    },
+    {
+      "version": "v0.1.0",
+      "date": "2026-08-30",
+      "badge": "New Feature",
+      "changes": [
+        { "tag": "new", "text": "Tweakr Black 0.1.0: first power-suite release with license activation." },
+        { "tag": "fix", "text": "Resolved floating activity log visibility issues." }
+      ]
+    }
+  ]
+}

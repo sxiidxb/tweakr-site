@@ -1,0 +1,491 @@
+---
+---
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#050507">
+    <meta name="color-scheme" content="dark">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="Tweakr admin dashboard — purchasers, licenses, feedback, users, announcements. Restricted access.">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=(), interest-cohort=()">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self' https://vtonvtzhtkwksydpilwf.supabase.co; form-action 'self'; base-uri 'self'; object-src 'none';">
+    <title>Admin — Tweakr</title>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style type="text/tailwindcss">
+        @theme {
+            --font-sans: 'Plus Jakarta Sans', sans-serif;
+            --color-bg-dark: #050507;
+            --color-tweakr-blue: #00f2fe;
+        }
+        body { font-family: var(--font-sans); background-color: var(--color-bg-dark); color: #ffffff; margin: 0; min-height: 100vh; }
+        .squircle { border-radius: 22px; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .badge-glow {
+            box-shadow: 0 0 12px rgba(0, 242, 254, 0.4);
+            border: 1px solid rgba(0, 242, 254, 0.6);
+            color: #00f2fe;
+            background: rgba(0, 242, 254, 0.1);
+        }
+        .btn-blue { background-color: #00f2fe; color: #000; transition: all 0.3s ease; }
+        .btn-blue:hover:not(:disabled) { box-shadow: 0 0 20px rgba(0, 242, 254, 0.4); transform: translateY(-2px); }
+        .btn-blue:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-ghost {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+            transition: all 0.3s ease;
+        }
+        .btn-ghost:hover { background: rgba(255, 255, 255, 0.08); }
+        .btn-danger {
+            background: rgba(255, 90, 90, 0.08);
+            border: 1px solid rgba(255, 90, 90, 0.4);
+            color: #ff8a8a;
+            transition: all 0.3s ease;
+        }
+        .btn-danger:hover { background: rgba(255, 90, 90, 0.16); }
+        .bg-grid {
+            background-size: 40px 40px;
+            background-image:
+                linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+        }
+        .auth-field {
+            background: rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+        .auth-field:focus {
+            outline: none;
+            border-color: rgba(0, 242, 254, 0.6);
+            box-shadow: 0 0 0 1px rgba(0, 242, 254, 0.25), 0 0 18px rgba(0, 242, 254, 0.12);
+        }
+        .license-key { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0.04em; }
+        .tab-btn { transition: all 0.25s ease; }
+        .tab-btn.active {
+            background: rgba(0, 242, 254, 0.1);
+            border-color: rgba(0, 242, 254, 0.5);
+            color: #00f2fe;
+        }
+        table.admin-table th {
+            text-align: left;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: #6b7280;
+            font-weight: 500;
+            padding: 0.6rem 0.75rem;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            white-space: nowrap;
+        }
+        table.admin-table td {
+            padding: 0.6rem 0.75rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 13px;
+            vertical-align: top;
+        }
+    </style>
+</head>
+<body class="bg-bg-dark text-white bg-grid relative overflow-x-hidden">
+    <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(0,242,254,0.05)_0%,transparent_50%)] pointer-events-none"></div>
+
+    <main class="container mx-auto px-6 py-16 relative z-10 min-h-screen flex flex-col items-center">
+        <div class="w-full max-w-5xl mb-12 flex justify-between items-center text-sm">
+            <a href="{{ site.baseurl }}/" class="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                <span class="font-medium tracking-wide">Home</span>
+            </a>
+            <button id="logoutBtn" class="hidden text-gray-400 hover:text-white transition-colors font-medium tracking-wide text-sm">Sign out</button>
+        </div>
+
+        <div class="w-full max-w-5xl mb-8">
+            <span class="px-3 py-1 text-xs font-semibold uppercase tracking-wider rounded-full badge-glow">Restricted</span>
+            <h1 class="text-4xl md:text-5xl font-bold tracking-tight mt-4 mb-3 bg-gradient-to-br from-white via-white to-gray-500 text-transparent bg-clip-text">Admin Dashboard</h1>
+            <p class="text-gray-400 font-light" id="adminSub">Checking access…</p>
+        </div>
+
+        <!-- Blocked / sign-in gate -->
+        <div id="gateState" class="w-full max-w-5xl">
+            <div class="squircle glass-panel p-8 text-center">
+                <h2 class="text-2xl font-semibold tracking-tight mb-2">Admins only</h2>
+                <p class="text-gray-400 font-light mb-6" id="gateMsg">Sign in with the admin account to continue.</p>
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <a href="{{ site.baseurl }}/login" class="squircle btn-blue py-3 px-6 font-semibold tracking-wide shadow-lg">Sign in</a>
+                    <a href="{{ site.baseurl }}/" class="squircle btn-ghost py-3 px-6 font-semibold tracking-wide">Back home</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="dashState" class="hidden w-full max-w-5xl space-y-8">
+            <div class="flex flex-wrap gap-2" id="tabs">
+                <button data-tab="purchasers" class="tab-btn active squircle px-5 py-2.5 text-sm font-semibold border border-white/10 bg-white/5">Purchasers</button>
+                <button data-tab="feedback" class="tab-btn squircle px-5 py-2.5 text-sm font-semibold border border-white/10 bg-white/5">Feedback inbox <span id="fbCount" class="ml-1 text-xs"></span></button>
+                <button data-tab="users" class="tab-btn squircle px-5 py-2.5 text-sm font-semibold border border-white/10 bg-white/5">Users</button>
+                <button data-tab="announce" class="tab-btn squircle px-5 py-2.5 text-sm font-semibold border border-white/10 bg-white/5">Announcements</button>
+            </div>
+            <p id="dashMsg" class="text-sm font-light h-5"></p>
+
+            <!-- Purchasers -->
+            <section id="tab-purchasers" class="squircle glass-panel p-6 md:p-8 overflow-x-auto">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-semibold tracking-tight">Tweakr Black purchasers</h2>
+                    <button id="reloadPurchasers" class="squircle btn-ghost px-4 py-2 text-sm font-semibold">Refresh</button>
+                </div>
+                <table class="admin-table w-full min-w-[760px]">
+                    <thead><tr><th>Email</th><th>Tier</th><th>License key</th><th>Status</th><th>HWID</th><th>Purchased</th><th>Actions</th></tr></thead>
+                    <tbody id="purchaserRows"><tr><td colspan="7" class="text-gray-500 font-light">Loading…</td></tr></tbody>
+                </table>
+            </section>
+
+            <!-- Feedback -->
+            <section id="tab-feedback" class="hidden squircle glass-panel p-6 md:p-8">
+                <div class="flex flex-wrap items-center gap-3 mb-4">
+                    <h2 class="text-xl font-semibold tracking-tight mr-auto">Feedback inbox</h2>
+                    <select id="fbTierFilter" class="auth-field rounded-lg px-3 py-2 text-sm">
+                        <option value="">All tiers</option>
+                        <option value="grey">Grey</option>
+                        <option value="black">Black</option>
+                    </select>
+                    <select id="fbStatusFilter" class="auth-field rounded-lg px-3 py-2 text-sm">
+                        <option value="">All statuses</option>
+                        <option value="new">New</option>
+                        <option value="reviewed">Reviewed</option>
+                        <option value="resolved">Resolved</option>
+                    </select>
+                    <button id="reloadFeedback" class="squircle btn-ghost px-4 py-2 text-sm font-semibold">Refresh</button>
+                </div>
+                <div id="feedbackList" class="space-y-4"><p class="text-gray-500 font-light">Loading…</p></div>
+            </section>
+
+            <!-- Users -->
+            <section id="tab-users" class="hidden squircle glass-panel p-6 md:p-8">
+                <h2 class="text-xl font-semibold tracking-tight mb-2">Grey accounts</h2>
+                <p class="text-gray-400 font-light text-sm mb-4">Ban blocks sign-in and sign-up for that email. Delete removes the account entirely. You cannot ban yourself.</p>
+                <div class="flex gap-2 mb-4">
+                    <input id="banReason" type="text" placeholder="Ban reason (optional, shown to no one but you)" class="auth-field flex-1 rounded-lg px-4 py-2.5 text-sm" />
+                    <button id="reloadUsers" class="squircle btn-ghost px-4 py-2 text-sm font-semibold shrink-0">Refresh</button>
+                </div>
+                <div class="overflow-x-auto">
+                <table class="admin-table w-full min-w-[640px]">
+                    <thead><tr><th>Email</th><th>Signed up</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody id="userRows"><tr><td colspan="4" class="text-gray-500 font-light">Loading…</td></tr></tbody>
+                </table>
+                </div>
+            </section>
+
+            <!-- Announcements -->
+            <section id="tab-announce" class="hidden space-y-6">
+                <div class="squircle glass-panel p-6 md:p-8">
+                    <h2 class="text-xl font-semibold tracking-tight mb-2">Publish announcement</h2>
+                    <p class="text-gray-400 font-light text-sm mb-4">Shown as a banner on the site and readable by the apps.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-[160px_1fr_auto] gap-3">
+                        <select id="annAudience" class="auth-field rounded-lg px-3 py-2.5 text-sm">
+                            <option value="all">Everyone</option>
+                            <option value="grey">Grey users</option>
+                            <option value="black">Black users</option>
+                        </select>
+                        <input id="annMessage" type="text" maxlength="500" placeholder="e.g. Tweakr v3.1 Beta is now live!" class="auth-field rounded-lg px-4 py-2.5 text-sm" />
+                        <button id="publishAnn" class="squircle btn-blue px-5 py-2.5 text-sm font-semibold shrink-0">Publish</button>
+                    </div>
+                </div>
+                <div class="squircle glass-panel p-6 md:p-8">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-semibold tracking-tight">History</h2>
+                        <button id="reloadAnn" class="squircle btn-ghost px-4 py-2 text-sm font-semibold">Refresh</button>
+                    </div>
+                    <div id="annList" class="space-y-3"><p class="text-gray-500 font-light">Loading…</p></div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="{{ site.baseurl }}/assets/auth.js"></script>
+    <script>
+        var ADMIN_EMAIL = "quifflethebest@gmail.com";
+
+        function esc(s) {
+            return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+                return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+            });
+        }
+        function fmtDate(iso) {
+            try { return new Date(iso).toLocaleString(); } catch (e) { return iso || "—"; }
+        }
+        function dashMsg(text, ok) {
+            var el = document.getElementById("dashMsg");
+            el.textContent = text || "";
+            el.style.color = ok === false ? "#ff8a8a" : "#7ef0d0";
+            if (text) setTimeout(function () { if (el.textContent === text) el.textContent = ""; }, 4000);
+        }
+
+        async function boot() {
+            var session = window.tweakrAuth && window.tweakrAuth.getSession();
+            if (!session) return; // gate stays
+            if (!window.tweakrAuth.isAdmin()) {
+                document.getElementById("gateMsg").textContent =
+                    "Signed in as " + session.user.email + " — this area is restricted to the admin. You have been blocked from this page.";
+                return;
+            }
+            // Server is the real guard: confirm the JWT is still admin.
+            var probe = await window.tweakrAuth.adminCall("announcements", {});
+            if (!probe || probe.success !== true) {
+                document.getElementById("gateMsg").textContent =
+                    "Access denied by the server (" + ((probe && probe.error) || "forbidden") + ").";
+                return;
+            }
+            document.getElementById("gateState").classList.add("hidden");
+            document.getElementById("dashState").classList.remove("hidden");
+            document.getElementById("logoutBtn").classList.remove("hidden");
+            document.getElementById("adminSub").textContent = "Signed in as " + session.user.email + " · full control.";
+            loadPurchasers();
+            loadFeedback();
+        }
+
+        document.getElementById("logoutBtn").addEventListener("click", async function () {
+            await window.tweakrAuth.logout();
+            window.location.href = "{{ site.baseurl }}/";
+        });
+
+        // ---- Tabs ----
+        document.getElementById("tabs").addEventListener("click", function (e) {
+            var btn = e.target.closest("[data-tab]");
+            if (!btn) return;
+            var tabs = document.querySelectorAll("#tabs .tab-btn");
+            tabs.forEach(function (b) { b.classList.remove("active"); });
+            btn.classList.add("active");
+            ["purchasers", "feedback", "users", "announce"].forEach(function (t) {
+                document.getElementById("tab-" + t).classList.toggle("hidden", t !== btn.dataset.tab);
+            });
+            if (btn.dataset.tab === "users" && !usersLoaded) loadUsers();
+            if (btn.dataset.tab === "announce" && !annLoaded) loadAnnouncements();
+        });
+
+        // ---- Purchasers ----
+        async function loadPurchasers() {
+            var tbody = document.getElementById("purchaserRows");
+            var res = await window.tweakrAuth.adminCall("purchasers", {});
+            if (!res || !res.success) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-[#ff8a8a]">' + esc((res && res.error) || "Load failed.") + "</td></tr>";
+                return;
+            }
+            var rows = res.purchasers || [];
+            if (!rows.length) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-gray-500 font-light">No purchases yet.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = rows.map(function (p) {
+                var active = p.is_active !== false;
+                return "<tr>" +
+                    "<td class='text-white'>" + esc(p.email) + (p.coupon ? ' <span class="text-[10px] text-[#00f2fe] border border-[#00f2fe]/40 rounded-full px-2 py-0.5 ml-1">' + esc(p.coupon) + "</span>" : "") + "</td>" +
+                    "<td>" + esc(p.tier) + "</td>" +
+                    "<td class='license-key text-[#00f2fe]'>" + esc(p.license_key) + "</td>" +
+                    "<td>" + (active ? '<span class="text-[#7ef0d0]">Active</span>' : '<span class="text-[#ff8a8a]">Revoked</span>') + "</td>" +
+                    "<td>" + (p.hardware_id ? esc(String(p.hardware_id).slice(0, 12)) + "…" : '<span class="text-gray-500">unbound</span>') + "</td>" +
+                    "<td class='text-gray-400'>" + esc(fmtDate(p.created_at)) + "</td>" +
+                    "<td class='whitespace-nowrap'>" +
+                    (active
+                        ? '<button class="squircle btn-danger px-3 py-1.5 text-xs font-semibold" data-revoke="' + esc(p.license_key) + '">Revoke</button> '
+                        : '<button class="squircle btn-ghost px-3 py-1.5 text-xs font-semibold" data-reactivate="' + esc(p.license_key) + '">Reactivate</button> ') +
+                    '<button class="squircle btn-ghost px-3 py-1.5 text-xs font-semibold" data-hwid="' + esc(p.license_key) + '">Reset HWID</button>' +
+                    "</td></tr>";
+            }).join("");
+        }
+        document.getElementById("reloadPurchasers").addEventListener("click", loadPurchasers);
+        document.getElementById("purchaserRows").addEventListener("click", async function (e) {
+            var t = e.target.closest("button");
+            if (!t) return;
+            var key = t.dataset.revoke || t.dataset.reactivate || t.dataset.hwid;
+            if (!key) return;
+            t.disabled = true;
+            if (t.dataset.revoke) {
+                if (!confirm("Revoke license " + key + "? The app will block it immediately.")) { t.disabled = false; return; }
+                var r1 = await window.tweakrAuth.adminCall("revoke_license", { license_key: key, is_active: false });
+                dashMsg(r1 && r1.success ? "License revoked." : ("Revoke failed: " + ((r1 && r1.error) || "unknown")), !!(r1 && r1.success));
+            } else if (t.dataset.reactivate) {
+                var r2 = await window.tweakrAuth.adminCall("revoke_license", { license_key: key, is_active: true });
+                dashMsg(r2 && r2.success ? "License reactivated." : ("Failed: " + ((r2 && r2.error) || "unknown")), !!(r2 && r2.success));
+            } else {
+                var r3 = await window.tweakrAuth.adminCall("reset_hwid", { license_key: key });
+                dashMsg(r3 && r3.success ? "HWID unbound." : ("Failed: " + ((r3 && r3.error) || "unknown")), !!(r3 && r3.success));
+            }
+            loadPurchasers();
+        });
+
+        // ---- Feedback ----
+        async function loadFeedback() {
+            var list = document.getElementById("feedbackList");
+            var params = {};
+            var tier = document.getElementById("fbTierFilter").value;
+            var status = document.getElementById("fbStatusFilter").value;
+            if (tier) params.tier = tier;
+            if (status) params.status = status;
+            var res = await window.tweakrAuth.adminCall("feedback", params);
+            if (!res || !res.success) {
+                list.innerHTML = '<p class="text-[#ff8a8a]">' + esc((res && res.error) || "Load failed.") + "</p>";
+                return;
+            }
+            var rows = res.feedback || [];
+            var fresh = rows.filter(function (f) { return f.status === "new"; }).length;
+            document.getElementById("fbCount").textContent = rows.length ? "(" + rows.length + (fresh ? ", " + fresh + " new" : "") + ")" : "";
+            if (!rows.length) {
+                list.innerHTML = '<p class="text-gray-500 font-light">Inbox zero. Nothing here.</p>';
+                return;
+            }
+            list.innerHTML = rows.map(function (f) {
+                return '<article class="rounded-2xl border border-white/10 bg-black/30 p-5" data-fbid="' + esc(f.id) + '">' +
+                    '<div class="flex flex-wrap items-center gap-2 mb-2">' +
+                    '<span class="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full ' + (f.tier === "black" ? "badge-glow" : "border border-white/15 bg-white/5 text-gray-300") + '">' + esc(f.tier) + "</span>" +
+                    '<span class="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full border border-white/15 bg-white/5 text-gray-300">' + esc(f.kind) + "</span>" +
+                    '<span class="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full border border-white/15 bg-white/5 ' + (f.status === "new" ? "text-[#ff8a8a]" : f.status === "reviewed" ? "text-[#f0d27e]" : "text-[#7ef0d0]") + '">' + esc(f.status) + "</span>" +
+                    '<span class="text-xs text-gray-500 ml-auto">' + esc(fmtDate(f.created_at)) + "</span></div>" +
+                    '<h3 class="font-semibold tracking-tight mb-1">' + esc(f.title) + "</h3>" +
+                    '<p class="text-sm text-gray-300 font-light whitespace-pre-wrap mb-3">' + esc(f.body) + "</p>" +
+                    '<p class="text-xs text-gray-500 mb-3">' + esc(f.email) + (f.app_version ? " · v" + esc(f.app_version) : "") + "</p>" +
+                    '<div class="flex gap-2">' +
+                    '<button class="squircle btn-ghost px-3 py-1.5 text-xs font-semibold" data-status="reviewed">Mark reviewed</button>' +
+                    '<button class="squircle btn-ghost px-3 py-1.5 text-xs font-semibold" data-status="resolved">Mark resolved</button>' +
+                    "</div></article>";
+            }).join("");
+        }
+        document.getElementById("reloadFeedback").addEventListener("click", loadFeedback);
+        document.getElementById("fbTierFilter").addEventListener("change", loadFeedback);
+        document.getElementById("fbStatusFilter").addEventListener("change", loadFeedback);
+        document.getElementById("feedbackList").addEventListener("click", async function (e) {
+            var btn = e.target.closest("button[data-status]");
+            if (!btn) return;
+            var card = e.target.closest("[data-fbid]");
+            btn.disabled = true;
+            var res = await window.tweakrAuth.adminCall("set_feedback", { id: card.dataset.fbid, status: btn.dataset.status });
+            dashMsg(res && res.success ? "Feedback updated." : ("Failed: " + ((res && res.error) || "unknown")), !!(res && res.success));
+            loadFeedback();
+        });
+
+        // ---- Users ----
+        var usersLoaded = false;
+        async function loadUsers() {
+            usersLoaded = true;
+            var tbody = document.getElementById("userRows");
+            var res = await window.tweakrAuth.adminCall("users", {});
+            if (!res || !res.success) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-[#ff8a8a]">' + esc((res && res.error) || "Load failed.") + "</td></tr>";
+                return;
+            }
+            var bans = res.bans || {};
+            var rows = res.users || [];
+            if (!rows.length) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-gray-500 font-light">No accounts yet.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = rows.map(function (u) {
+                var banned = !!bans[(u.email || "").toLowerCase()];
+                var selfRow = (u.email || "").toLowerCase() === ADMIN_EMAIL.toLowerCase();
+                return "<tr>" +
+                    "<td class='text-white'>" + esc(u.email) + "</td>" +
+                    "<td class='text-gray-400'>" + esc(fmtDate(u.created_at)) + "</td>" +
+                    "<td>" + (banned ? '<span class="text-[#ff8a8a]">Banned</span>' : '<span class="text-[#7ef0d0]">OK</span>') + "</td>" +
+                    "<td class='whitespace-nowrap'>" + (selfRow ? '<span class="text-gray-500 text-xs">you</span>' :
+                        (banned
+                            ? '<button class="squircle btn-ghost px-3 py-1.5 text-xs font-semibold" data-unban="' + esc(u.email) + '">Unban</button> '
+                            : '<button class="squircle btn-danger px-3 py-1.5 text-xs font-semibold" data-ban="' + esc(u.email) + '">Ban</button> ') +
+                        '<button class="squircle btn-ghost px-3 py-1.5 text-xs font-semibold" data-deluser="' + esc(u.id) + '" data-email="' + esc(u.email) + '">Delete</button>') +
+                    "</td></tr>";
+            }).join("");
+        }
+        document.getElementById("reloadUsers").addEventListener("click", loadUsers);
+        document.getElementById("userRows").addEventListener("click", async function (e) {
+            var t = e.target.closest("button");
+            if (!t) return;
+            var reason = document.getElementById("banReason").value.trim().slice(0, 200);
+            if (t.dataset.ban) {
+                if (t.dataset.armed !== "1") {
+                    t.dataset.armed = "1";
+                    t.textContent = "Confirm ban?";
+                    setTimeout(function () { t.dataset.armed = ""; t.textContent = "Ban"; }, 3000);
+                    return;
+                }
+                var r1 = await window.tweakrAuth.adminCall("ban", { email: t.dataset.ban, reason: reason || null });
+                dashMsg(r1 && r1.success ? "User banned." : ("Ban failed: " + ((r1 && r1.error) || "unknown")), !!(r1 && r1.success));
+            } else if (t.dataset.unban) {
+                var r2 = await window.tweakrAuth.adminCall("unban", { email: t.dataset.unban });
+                dashMsg(r2 && r2.success ? "User unbanned." : ("Failed: " + ((r2 && r2.error) || "unknown")), !!(r2 && r2.success));
+            } else if (t.dataset.deluser) {
+                if (t.dataset.armed !== "1") {
+                    t.dataset.armed = "1";
+                    t.textContent = "Confirm delete?";
+                    setTimeout(function () { t.dataset.armed = ""; t.textContent = "Delete"; }, 3000);
+                    return;
+                }
+                var r3 = await window.tweakrAuth.adminCall("delete_user", { user_id: t.dataset.deluser });
+                dashMsg(r3 && r3.success ? "Account deleted." : ("Delete failed: " + ((r3 && r3.error) || "unknown")), !!(r3 && r3.success));
+            }
+            loadUsers();
+        });
+
+        // ---- Announcements ----
+        var annLoaded = false;
+        async function loadAnnouncements() {
+            annLoaded = true;
+            var list = document.getElementById("annList");
+            var res = await window.tweakrAuth.adminCall("announcements", {});
+            if (!res || !res.success) {
+                list.innerHTML = '<p class="text-[#ff8a8a]">' + esc((res && res.error) || "Load failed.") + "</p>";
+                return;
+            }
+            var rows = res.announcements || [];
+            if (!rows.length) {
+                list.innerHTML = '<p class="text-gray-500 font-light">No announcements yet.</p>';
+                return;
+            }
+            list.innerHTML = rows.map(function (a) {
+                return '<div class="rounded-2xl border border-white/10 bg-black/30 p-4 flex flex-wrap items-center gap-3">' +
+                    '<span class="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full border border-white/15 bg-white/5 text-gray-300">' + esc(a.audience) + "</span>" +
+                    '<span class="flex-1 text-sm text-gray-200 font-light min-w-[200px]">' + esc(a.message) + "</span>" +
+                    '<span class="text-xs ' + (a.active ? "text-[#7ef0d0]" : "text-gray-500") + '">' + (a.active ? "live" : "off") + "</span>" +
+                    '<button class="squircle btn-ghost px-3 py-1.5 text-xs font-semibold" data-ann="' + esc(a.id) + '" data-active="' + (a.active ? "0" : "1") + '">' + (a.active ? "Take down" : "Republish") + "</button></div>";
+            }).join("");
+        }
+        document.getElementById("reloadAnn").addEventListener("click", loadAnnouncements);
+        document.getElementById("publishAnn").addEventListener("click", async function () {
+            var btn = document.getElementById("publishAnn");
+            var msg = document.getElementById("annMessage").value.trim();
+            var aud = document.getElementById("annAudience").value;
+            if (msg.length < 3) { dashMsg("Write the announcement first (3+ characters).", false); return; }
+            btn.disabled = true;
+            var res = await window.tweakrAuth.adminCall("announce", { audience: aud, message: msg });
+            btn.disabled = false;
+            if (res && res.success) {
+                document.getElementById("annMessage").value = "";
+                dashMsg("Announcement is live.");
+                loadAnnouncements();
+            } else {
+                dashMsg("Publish failed: " + ((res && res.error) || "unknown"), false);
+            }
+        });
+        document.getElementById("annList").addEventListener("click", async function (e) {
+            var t = e.target.closest("button[data-ann]");
+            if (!t) return;
+            t.disabled = true;
+            var res = await window.tweakrAuth.adminCall("set_announcement", { id: t.dataset.ann, active: t.dataset.active === "1" });
+            dashMsg(res && res.success ? "Updated." : ("Failed: " + ((res && res.error) || "unknown")), !!(res && res.success));
+            loadAnnouncements();
+        });
+
+        boot();
+    </script>
+    <script src="{{ site.baseurl }}/assets/auth-nav.js"></script>
+</body>
+</html>

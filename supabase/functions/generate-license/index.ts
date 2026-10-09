@@ -161,6 +161,35 @@ serve(async (req) => {
         tier,
         email: normalisedEmail,
         coupon: normalisedCoupon,
+        alreadyOwned: true,
+      }, 200, origin);
+    }
+
+    // Strict 1-license limit: one active Tweakr Black license per email.
+    // If this email already owns an active key, hand that key back instead
+    // of minting a second one (works for paid + coupon flows alike).
+    const { data: owned, error: ownedError } = await supabase
+      .from("licenses")
+      .select("license_key,tier,email")
+      .eq("email", normalisedEmail)
+      .eq("is_active", true)
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+
+    if (ownedError) {
+      console.error("DB owned-lookup error:", ownedError);
+      return jsonResponse({ success: false, error: "Database error: " + ownedError.message }, 200, origin);
+    }
+
+    if (owned) {
+      return jsonResponse({
+        success: true,
+        licenseKey: (owned as { license_key: string }).license_key,
+        tier: (owned as { tier: string }).tier,
+        email: normalisedEmail,
+        coupon: normalisedCoupon,
+        alreadyOwned: true,
       }, 200, origin);
     }
 

@@ -3,7 +3,7 @@
 // either with a service-role key (admin actions) or with the user's own JWT
 // (read actions).
 //
-// POST /functions/v1/auth-handler?action=<one of: signup | login | logout | me | my-licenses>
+// POST /functions/v1/auth-handler?action=<one of: signup | login | logout | me | my-licenses | submit-feedback | get-announcements>
 //
 // All responses are JSON. CORS is open so the static GitHub Pages site can call
 // us, but we validate the Origin/Referer and reject obviously-wrong requests.
@@ -120,6 +120,13 @@ serve(async (req: Request) => {
 
   const body = await readJson(req);
 
+  async function isBanned(email: string): Promise<string | null> {
+    const { data } = await admin.from("bans").select("reason").eq("email", email).maybeSingle();
+    if (!data) return null;
+    const r = data as { reason?: string | null };
+    return r?.reason || "suspended";
+  }
+
   // ---------- SIGNUP ----------
   if (action === "signup") {
     const email = body.email;
@@ -129,6 +136,12 @@ serve(async (req: Request) => {
     }
     const pwError = passwordPolicy(password);
     if (pwError) return json({ success: false, error: pwError }, 400, origin);
+
+    const normEmail = email.trim().toLowerCase();
+    const banReason = await isBanned(normEmail);
+    if (banReason) {
+      return json({ success: false, error: "This account has been suspended. Contact support." }, 403, origin);
+    }
 
     // admin.createUser lets us create a user without going through the public
     // signUp flow (which would require email confirmation). We auto-confirm so
@@ -170,6 +183,11 @@ serve(async (req: Request) => {
     const password = body.password;
     if (!isValidEmail(email) || typeof password !== "string" || password.length === 0) {
       return json({ success: false, error: "Email and password are required." }, 400, origin);
+    }
+    const normEmail = String(email).trim().toLowerCase();
+    const banReason = await isBanned(normEmail);
+    if (banReason) {
+      return json({ success: false, error: "This account has been suspended. Contact support." }, 403, origin);
     }
     const session = await issueSession(supabaseUrl, anonKey, String(email), String(password));
     if (!session) {
@@ -226,6 +244,76 @@ serve(async (req: Request) => {
       return rest;
     });
     return json({ success: true, licenses: safe }, 200, origin);
+  }
+
+  // ---------- SUBMIT FEEDBACK (signed-in users; black tier needs own active key) ----------
+  if (action === "submit-feedback") {
+    const { data: userData, error: userErr } = await userClient.auth.getUser();
+    if (userErr || !userData?.user?.email) {
+      return json({ success: false, error: "Sign in to send feedback." }, 401, origin);
+    }
+    const email = userData.user.email as string;
+    const tier = body.tier;
+    const kind = body.kind;
+    const title = body.title;
+    const fbody = body.body;
+    if (tier !== "grey" && tier !== "black") {
+      return json({ success: false, error: "Tier must be grey or black." }, 400, origin);
+    }
+    if (kind !== "bug" && kind !== "feature") {
+      return json({ success: false, error: "Kind must be bug or feature." }, 400, origin);
+    }
+    if (typeof title !== "string" || title.trim().length < 3 || title.trim().length > 120) {
+      return json({ success: false, error: "Title must be 3–120 characters." }, 400, origin);
+    }
+    if (typeof fbody !== "string" || fbody.trim().length < 10 || fbody.trim().length > 5000) {
+      return json({ success: false, error: "Details must be 10–5000 characters." }, 400, origin);
+    }
+    if (tier === "black") {
+      // Black feedback needs a real, active license key (any owner — the
+      // signed-in account email is what gets recorded in the inbox).
+      const key = body.license_key;
+      if (typeof key !== "string" || !key.trim()) {
+        return json({ success: false, error: "A license key is required for Black feedback." }, 400, origin);
+      }
+      const { data: lic } = await admin
+        .from("licenses")
+        .select("is_active")
+        .eq("license_key", key.trim().toUpperCase())
+        .maybeSingle();
+      const rec = lic as { is_active?: boolean } | null;
+      if (!rec || rec.is_active === false) {
+        return json({ success: false, error: "That license key is not valid or has been revoked." }, 403, origin);
+      }
+    }
+    const appVersion = typeof body.app_version === "string" ? body.app_version.slice(0, 32) : null;
+    const { error: insErr } = await admin.from("feedback").insert({
+      email: email.toLowerCase(), tier, kind,
+      title: title.trim(), body: fbody.trim(), app_version: appVersion,
+    });
+    if (insErr) {
+      console.error("submit-feedback error:", insErr);
+      return json({ success: false, error: "Could not save feedback. Try again." }, 500, origin);
+    }
+    return json({ success: true }, 200, origin);
+  }
+
+  // ---------- GET ANNOUNCEMENTS (public — site + apps read the banner) ----------
+  if (action === "get-announcements") {
+    const audience = typeof body.audience === "string" ? body.audience : "all";
+    const { data, error } = await admin
+      .from("announcements")
+      .select("audience,message,created_at")
+      .eq("active", true)
+      .order("created_at", { ascending: false })
+      .limit(10);
+    if (error) {
+      console.error("get-announcements error:", error);
+      return json({ success: false, error: "Could not load announcements." }, 500, origin);
+    }
+    const rows = ((data || []) as { audience: string; message: string; created_at: string }[])
+      .filter((r) => r.audience === "all" || r.audience === audience);
+    return json({ success: true, announcements: rows }, 200, origin);
   }
 
   return json({ success: false, error: "Unknown action." }, 400, origin);

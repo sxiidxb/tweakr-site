@@ -1,0 +1,191 @@
+---
+---
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#050507">
+    <meta name="color-scheme" content="dark">
+    <meta name="description" content="Tweakr Grey beta testing: free accounts, experimental builds, bug reports and feature requests.">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=(), interest-cohort=()">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self' https://vtonvtzhtkwksydpilwf.supabase.co; form-action 'self'; base-uri 'self'; object-src 'none';">
+    <title>Grey Beta — Tweakr</title>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style type="text/tailwindcss">
+        @theme {
+            --font-sans: 'Plus Jakarta Sans', sans-serif;
+            --color-bg-dark: #050507;
+            --color-tweakr-blue: #00f2fe;
+        }
+        body { font-family: var(--font-sans); background-color: var(--color-bg-dark); color: #ffffff; margin: 0; min-height: 100vh; }
+        .squircle { border-radius: 22px; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .badge-glow {
+            box-shadow: 0 0 12px rgba(0, 242, 254, 0.4);
+            border: 1px solid rgba(0, 242, 254, 0.6);
+            color: #00f2fe;
+            background: rgba(0, 242, 254, 0.1);
+        }
+        .btn-blue { background-color: #00f2fe; color: #000; transition: all 0.3s ease; }
+        .btn-blue:hover:not(:disabled) { box-shadow: 0 0 20px rgba(0, 242, 254, 0.4); transform: translateY(-2px); }
+        .btn-blue:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-ghost {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+            transition: all 0.3s ease;
+        }
+        .btn-ghost:hover { background: rgba(255, 255, 255, 0.08); }
+        .bg-grid {
+            background-size: 40px 40px;
+            background-image:
+                linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+        }
+        .auth-field {
+            background: rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+        .auth-field:focus {
+            outline: none;
+            border-color: rgba(0, 242, 254, 0.6);
+            box-shadow: 0 0 0 1px rgba(0, 242, 254, 0.25), 0 0 18px rgba(0, 242, 254, 0.12);
+        }
+    </style>
+</head>
+<body class="bg-bg-dark text-white bg-grid relative overflow-x-hidden">
+    <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(0,242,254,0.05)_0%,transparent_50%)] pointer-events-none"></div>
+
+    <main class="container mx-auto px-6 py-16 relative z-10 min-h-screen flex flex-col items-center">
+        <div class="w-full max-w-3xl mb-12 flex justify-between items-center text-sm">
+            <a href="{{ site.baseurl }}/" class="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                <span class="font-medium tracking-wide">Home</span>
+            </a>
+            <div id="authNav" class="flex items-center gap-2"></div>
+        </div>
+
+        <div class="w-full max-w-3xl mb-10">
+            <span class="px-3 py-1 text-xs font-semibold uppercase tracking-wider rounded-full badge-glow">Free beta</span>
+            <h1 class="text-4xl md:text-5xl font-bold tracking-tight mt-4 mb-3 bg-gradient-to-br from-white via-white to-gray-500 text-transparent bg-clip-text">Tweakr Grey Beta</h1>
+            <p class="text-gray-400 font-light">Sign up with email + password, grab experimental free builds, and tell us what breaks.</p>
+        </div>
+
+        <!-- Sign-in gate -->
+        <div id="gateState" class="w-full max-w-3xl">
+            <div class="squircle glass-panel p-8 text-center">
+                <h2 class="text-2xl font-semibold tracking-tight mb-2">Sign in to enter the beta</h2>
+                <p class="text-gray-400 font-light mb-6">A free Tweakr account is all you need.</p>
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <a href="{{ site.baseurl }}/login" class="squircle btn-blue py-3 px-6 font-semibold tracking-wide shadow-lg">Sign in</a>
+                    <a href="{{ site.baseurl }}/signup" class="squircle btn-ghost py-3 px-6 font-semibold tracking-wide">Create account</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Beta content -->
+        <div id="betaState" class="hidden w-full max-w-3xl space-y-8">
+            <div class="squircle glass-panel p-8">
+                <h2 class="text-2xl font-semibold tracking-tight mb-2">Experimental Grey builds</h2>
+                <p class="text-gray-400 font-light mb-6">Test builds with the newest free features. They may be rough — that is the point.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <a href="{{ site.baseurl }}/downloads/Tweakr_2.0.0_x64-setup.exe" download class="squircle btn-blue block text-center py-4 px-6 font-semibold tracking-wide shadow-lg">Download Beta EXE</a>
+                    <a href="{{ site.baseurl }}/downloads/Tweakr_2.0.0_x64_en-US.msi" download class="squircle btn-ghost block text-center py-4 px-6 font-semibold tracking-wide">Download Beta MSI</a>
+                </div>
+            </div>
+
+            <div class="squircle glass-panel p-8">
+                <h2 class="text-2xl font-semibold tracking-tight mb-2">Report a bug / request a feature</h2>
+                <p class="text-gray-400 font-light mb-6">Posting as <span id="fbEmail" class="text-white"></span> · Grey tier</p>
+                <form id="fbForm" class="space-y-4" novalidate>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-[0.18em] text-gray-500 mb-2 font-medium">Type</label>
+                            <select id="fbKind" class="auth-field w-full rounded-lg px-4 py-3 text-sm">
+                                <option value="bug">Bug report</option>
+                                <option value="feature">Feature request</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-[0.18em] text-gray-500 mb-2 font-medium">App version (optional)</label>
+                            <input id="fbVersion" type="text" placeholder="e.g. 2.0.0" class="auth-field w-full rounded-lg px-4 py-3 text-sm" />
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-[0.18em] text-gray-500 mb-2 font-medium">Title</label>
+                        <input id="fbTitle" type="text" placeholder="Short summary" class="auth-field w-full rounded-lg px-4 py-3 text-sm" />
+                    </div>
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-[0.18em] text-gray-500 mb-2 font-medium">Details</label>
+                        <textarea id="fbBody" rows="5" placeholder="What happened, steps to reproduce, what you expected…" class="auth-field w-full rounded-lg px-4 py-3 text-sm"></textarea>
+                    </div>
+                    <p id="fbError" class="text-sm text-[#ff8a8a] font-light"></p>
+                    <p id="fbOk" class="text-sm text-[#7ef0d0] font-light"></p>
+                    <button type="submit" id="fbBtn" class="squircle btn-blue py-3.5 px-6 font-semibold tracking-wide shadow-lg">Send feedback</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="w-full max-w-3xl mt-10 text-center text-sm text-gray-500 font-light">
+            <a href="{{ site.baseurl }}/" class="hover:text-white transition-colors">Home</a>
+            <span class="mx-2">·</span>
+            <a href="{{ site.baseurl }}/black-beta" class="hover:text-white transition-colors">Black Beta</a>
+            <span class="mx-2">·</span>
+            <a href="{{ site.baseurl }}/faq" class="hover:text-white transition-colors">FAQ</a>
+        </div>
+    </main>
+
+    <script src="{{ site.baseurl }}/assets/auth.js"></script>
+    <script>
+        (function () {
+            var session = window.tweakrAuth && window.tweakrAuth.getSession();
+            if (!session) return; // gate stays visible
+            document.getElementById("gateState").classList.add("hidden");
+            document.getElementById("betaState").classList.remove("hidden");
+            document.getElementById("fbEmail").textContent = session.user.email;
+
+            var form = document.getElementById("fbForm");
+            form.addEventListener("submit", async function (e) {
+                e.preventDefault();
+                var errEl = document.getElementById("fbError");
+                var okEl = document.getElementById("fbOk");
+                var btn = document.getElementById("fbBtn");
+                errEl.textContent = ""; okEl.textContent = "";
+                var payload = {
+                    tier: "grey",
+                    kind: document.getElementById("fbKind").value,
+                    title: document.getElementById("fbTitle").value.trim(),
+                    body: document.getElementById("fbBody").value.trim(),
+                    app_version: document.getElementById("fbVersion").value.trim()
+                };
+                if (payload.title.length < 3) { errEl.textContent = "Give it a short title (3+ characters)."; return; }
+                if (payload.body.length < 10) { errEl.textContent = "Add a few more details (10+ characters)."; return; }
+                btn.disabled = true;
+                var res = await window.tweakrAuth.submitFeedback(payload);
+                btn.disabled = false;
+                if (res && res.success) {
+                    okEl.textContent = "Thanks — your feedback is in. We read everything.";
+                    form.reset();
+                } else {
+                    errEl.textContent = (res && res.error) || "Could not send feedback. Try again.";
+                }
+            });
+        })();
+    </script>
+    <script src="{{ site.baseurl }}/assets/auth-nav.js"></script>
+</body>
+</html>
