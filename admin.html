@@ -231,7 +231,7 @@
         </div>
     </main>
 
-    <script src="{{ site.baseurl }}/assets/auth.js"></script>
+    <script src="{{ site.baseurl }}/assets/auth.js?v=2"></script>
     <script>
         var ADMIN_EMAIL = "quifflethebest@gmail.com";
 
@@ -333,7 +333,8 @@
                     (active
                         ? '<button class="squircle btn-danger px-3 py-1.5 text-xs font-semibold" data-revoke="' + esc(p.license_key) + '">Revoke</button> '
                         : '<button class="squircle btn-ghost px-3 py-1.5 text-xs font-semibold" data-reactivate="' + esc(p.license_key) + '">Reactivate</button> ') +
-                    '<button class="squircle btn-ghost px-3 py-1.5 text-xs font-semibold" data-hwid="' + esc(p.license_key) + '">Reset HWID</button>' +
+                    '<button class="squircle btn-ghost px-3 py-1.5 text-xs font-semibold" data-hwid="' + esc(p.license_key) + '" title="Lets the customer activate on a new computer">Unbind PC</button> ' +
+                    '<button class="squircle btn-danger px-3 py-1.5 text-xs font-semibold" data-delkey="' + esc(p.license_key) + '">Delete license</button>' +
                     "</td></tr>";
             }).join("");
         }
@@ -344,7 +345,7 @@
         document.getElementById("purchaserRows").addEventListener("click", async function (e) {
             var t = e.target.closest("button");
             if (!t) return;
-            var key = t.dataset.revoke || t.dataset.reactivate || t.dataset.hwid;
+            var key = t.dataset.revoke || t.dataset.reactivate || t.dataset.hwid || t.dataset.delkey;
             if (!key) return;
             t.disabled = true;
             if (t.dataset.revoke) {
@@ -354,9 +355,20 @@
             } else if (t.dataset.reactivate) {
                 var r2 = await window.tweakrAuth.adminCall("revoke_license", { license_key: key, is_active: true });
                 dashMsg(r2 && r2.success ? "License reactivated." : ("Failed: " + ((r2 && r2.error) || "unknown")), !!(r2 && r2.success));
-            } else {
+            } else if (t.dataset.hwid) {
                 var r3 = await window.tweakrAuth.adminCall("reset_hwid", { license_key: key });
-                dashMsg(r3 && r3.success ? "HWID unbound." : ("Failed: " + ((r3 && r3.error) || "unknown")), !!(r3 && r3.success));
+                dashMsg(r3 && r3.success ? "PC unbound — the customer can activate on a new computer." : ("Failed: " + ((r3 && r3.error) || "unknown")), !!(r3 && r3.success));
+            } else if (t.dataset.delkey) {
+                if (t.dataset.armed !== "1") {
+                    t.dataset.armed = "1";
+                    t.textContent = "Confirm delete?";
+                    setTimeout(function () { t.dataset.armed = ""; t.textContent = "Delete license"; }, 3000);
+                    t.disabled = false;
+                    return;
+                }
+                if (!confirm("Permanently DELETE license " + key + "? This cannot be undone. Revoke instead to keep the record.")) { t.disabled = false; return; }
+                var r4 = await window.tweakrAuth.adminCall("delete_license", { license_key: key });
+                dashMsg(r4 && r4.success ? "License deleted." : ("Delete failed: " + ((r4 && r4.error) || "unknown")), !!(r4 && r4.success));
             }
             loadPurchasers();
         });
@@ -395,6 +407,7 @@
                     '<button class="squircle btn-ghost px-3 py-1.5 text-xs font-semibold" data-status="in_progress">In Progress</button>' +
                     '<button class="squircle btn-ghost px-3 py-1.5 text-xs font-semibold" data-status="resolved">Resolved</button>' +
                     '<button class="squircle btn-ghost px-3 py-1.5 text-xs font-semibold" data-status="dismissed">Dismiss</button>' +
+                    '<button class="squircle btn-danger px-3 py-1.5 text-xs font-semibold" data-fbdel="' + esc(f.id) + '">Delete</button>' +
                     "</div></article>";
             }).join("");
         }
@@ -402,6 +415,20 @@
         document.getElementById("fbTierFilter").addEventListener("change", loadFeedback);
         document.getElementById("fbStatusFilter").addEventListener("change", loadFeedback);
         document.getElementById("feedbackList").addEventListener("click", async function (e) {
+            var del = e.target.closest("button[data-fbdel]");
+            if (del) {
+                if (del.dataset.armed !== "1") {
+                    del.dataset.armed = "1";
+                    del.textContent = "Confirm delete?";
+                    setTimeout(function () { del.dataset.armed = ""; del.textContent = "Delete"; }, 3000);
+                    return;
+                }
+                del.disabled = true;
+                var rd = await window.tweakrAuth.adminCall("delete_feedback", { id: del.dataset.fbdel });
+                dashMsg(rd && rd.success ? "Feedback deleted." : ("Delete failed: " + ((rd && rd.error) || "unknown")), !!(rd && rd.success));
+                loadFeedback();
+                return;
+            }
             var btn = e.target.closest("button[data-status]");
             if (!btn) return;
             var card = e.target.closest("[data-fbid]");
@@ -546,6 +573,6 @@
 
         boot();
     </script>
-    <script src="{{ site.baseurl }}/assets/auth-nav.js?v=2"></script>
+    <script src="{{ site.baseurl }}/assets/auth-nav.js?v=3"></script>
 </body>
 </html>

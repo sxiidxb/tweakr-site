@@ -8,7 +8,7 @@
 // Actions:
 //   purchasers | revoke_license {license_key, is_active} | reset_hwid {license_key}
 //   users | ban {email, reason?} | unban {email} | delete_user {user_id}
-//   feedback {status?} | set_feedback {id, status}
+//   feedback {status?} | set_feedback {id, status} | delete_feedback {id}
 //   announcements | announce {audience, message} | set_announcement {id, active}
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -144,6 +144,19 @@ serve(async (req: Request) => {
     return json({ success: true }, 200, origin);
   }
 
+  // ---------- DELETE LICENSE (permanent removal) ----------
+  if (action === "delete_license") {
+    const key = body.license_key;
+    if (typeof key !== "string" || !key) {
+      return json({ success: false, error: "license_key is required." }, 400, origin);
+    }
+    const norm = key.trim().toUpperCase();
+    const { error } = await admin.from("licenses").delete().eq("license_key", norm);
+    if (error) return json({ success: false, error: "Database error: " + error.message }, 500, origin);
+    await audit("license_delete", norm);
+    return json({ success: true }, 200, origin);
+  }
+
   // ---------- USERS ----------
   if (action === "users") {
     const { data, error } = await admin.auth.admin.listUsers();
@@ -228,6 +241,17 @@ serve(async (req: Request) => {
     const { error } = await admin.from("feedback").update({ status }).eq("id", id);
     if (error) return json({ success: false, error: "Database error: " + error.message }, 500, origin);
     await audit("feedback_status", (status as string) + " — " + id);
+    return json({ success: true }, 200, origin);
+  }
+
+  if (action === "delete_feedback") {
+    const id = body.id;
+    if (typeof id !== "string" || !id) {
+      return json({ success: false, error: "Valid id is required." }, 400, origin);
+    }
+    const { error } = await admin.from("feedback").delete().eq("id", id);
+    if (error) return json({ success: false, error: "Database error: " + error.message }, 500, origin);
+    await audit("feedback_delete", id);
     return json({ success: true }, 200, origin);
   }
 

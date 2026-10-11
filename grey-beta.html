@@ -103,9 +103,9 @@
                 <h2 class="text-2xl font-semibold tracking-tight mb-2">Experimental Grey builds <span class="text-[#00f2fe]">v3.0</span></h2>
                 <p class="text-gray-400 font-light mb-6">Test builds with the newest free features. They may be rough — that is the point.</p>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <a href="{{ site.baseurl }}/downloads/Tweakr_3.0.0_x64-setup.exe" download class="squircle btn-blue block text-center py-4 px-6 font-semibold tracking-wide shadow-lg">Download EXE</a>
-                    <a href="{{ site.baseurl }}/downloads/Tweakr_3.0.0_x64_en-US.msi" download class="squircle btn-ghost block text-center py-4 px-6 font-semibold tracking-wide">Download MSI</a>
-                    <a href="{{ site.baseurl }}/downloads/Tweakr_3.0.0_Portable.exe" download class="squircle btn-ghost block text-center py-4 px-6 font-semibold tracking-wide">Portable EXE</a>
+                    <a href="{{ site.baseurl }}/downloads/Tweakr_3.0.0_x64-setup.exe" download data-dl="grey" class="squircle btn-blue block text-center py-4 px-6 font-semibold tracking-wide shadow-lg">Download EXE</a>
+                    <a href="{{ site.baseurl }}/downloads/Tweakr_3.0.0_x64_en-US.msi" download data-dl="grey" class="squircle btn-ghost block text-center py-4 px-6 font-semibold tracking-wide">Download MSI</a>
+                    <a href="{{ site.baseurl }}/downloads/Tweakr_3.0.0_Portable.exe" download data-dl="grey" class="squircle btn-ghost block text-center py-4 px-6 font-semibold tracking-wide">Portable EXE</a>
                 </div>
             </div>
 
@@ -156,7 +156,7 @@
     </main>
 
     <script src="{{ site.baseurl }}/assets/banner.js" data-audience="grey"></script>
-    <script src="{{ site.baseurl }}/assets/auth.js"></script>
+    <script src="{{ site.baseurl }}/assets/auth.js?v=2"></script>
     <script>
         (function () {
             var session = window.tweakrAuth && window.tweakrAuth.getSession();
@@ -165,6 +165,14 @@
             document.getElementById("betaState").classList.remove("hidden");
             document.getElementById("fbEmail").textContent = session.user.email;
 
+            // Download gate: feedback is for testers who installed the build.
+            // (Client-side nudge — the server still validates everything.)
+            document.querySelectorAll("[data-dl]").forEach(function (a) {
+                a.addEventListener("click", function () {
+                    try { localStorage.setItem("tweakr_dl_grey", "1"); } catch (e) {}
+                });
+            });
+
             var form = document.getElementById("fbForm");
             form.addEventListener("submit", async function (e) {
                 e.preventDefault();
@@ -172,6 +180,12 @@
                 var okEl = document.getElementById("fbOk");
                 var btn = document.getElementById("fbBtn");
                 errEl.textContent = ""; okEl.textContent = "";
+                var downloaded = false;
+                try { downloaded = localStorage.getItem("tweakr_dl_grey") === "1"; } catch (e) {}
+                if (!downloaded) {
+                    errEl.textContent = "Download and install the Grey v3.0 build first — feedback is for testers who run it.";
+                    return;
+                }
                 var payload = {
                     tier: "grey",
                     kind: document.getElementById("fbKind").value,
@@ -193,6 +207,6 @@
             });
         })();
     </script>
-    <script src="{{ site.baseurl }}/assets/auth-nav.js?v=2"></script>
+    <script src="{{ site.baseurl }}/assets/auth-nav.js?v=3"></script>
 </body>
 </html>

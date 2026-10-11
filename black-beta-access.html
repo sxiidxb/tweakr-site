@@ -111,7 +111,9 @@
             <div>
                 <span class="px-3 py-1 text-xs font-semibold uppercase tracking-wider rounded-full badge-glow">Premium beta · verified</span>
                 <h1 class="text-4xl md:text-5xl font-bold tracking-tight mt-4 mb-3 bg-gradient-to-br from-white via-white to-gray-500 text-transparent bg-clip-text">Black Beta Access</h1>
-                <p class="text-gray-400 font-light">Testing as <span id="betaEmail" class="text-white"></span></p>
+                <p class="text-gray-400 font-light">Testing as <span id="betaEmail" class="text-white"></span>
+                    <span class="ml-2 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full badge-glow">Verified purchase</span>
+                </p>
             </div>
 
             <div class="squircle glass-panel p-8">
@@ -129,8 +131,8 @@
                 <h2 class="text-2xl font-semibold tracking-tight mb-2">Current stable build</h2>
                 <p class="text-gray-400 font-light mb-6">While v2.0 cooks, this is the latest stable Black release.</p>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <a href="{{ site.baseurl }}/downloads/TWEAKR BLACK_0.1.0_x64-setup.exe" download class="squircle btn-blue block text-center py-4 px-6 font-semibold tracking-wide shadow-lg">Download EXE</a>
-                    <a href="{{ site.baseurl }}/downloads/TWEAKR BLACK_0.1.0_x64_en-US.msi" download class="squircle btn-ghost block text-center py-4 px-6 font-semibold tracking-wide">Download MSI</a>
+                    <a href="{{ site.baseurl }}/downloads/TWEAKR BLACK_0.1.0_x64-setup.exe" download data-dl="black" class="squircle btn-blue block text-center py-4 px-6 font-semibold tracking-wide shadow-lg">Download EXE</a>
+                    <a href="{{ site.baseurl }}/downloads/TWEAKR BLACK_0.1.0_x64_en-US.msi" download data-dl="black" class="squircle btn-ghost block text-center py-4 px-6 font-semibold tracking-wide">Download MSI</a>
                 </div>
             </div>
 
@@ -181,7 +183,7 @@
     </main>
 
     <script src="{{ site.baseurl }}/assets/banner.js" data-audience="black"></script>
-    <script src="{{ site.baseurl }}/assets/auth.js"></script>
+    <script src="{{ site.baseurl }}/assets/auth.js?v=2"></script>
     <script>
         var VERIFY_URL = "https://vtonvtzhtkwksydpilwf.supabase.co/functions/v1/verify-license";
         var BETA_PROGRESS = 17;
@@ -243,6 +245,12 @@
             }
         })();
 
+        document.querySelectorAll("[data-dl]").forEach(function (a) {
+            a.addEventListener("click", function () {
+                try { localStorage.setItem("tweakr_dl_black", "1"); } catch (e) {}
+            });
+        });
+
         document.getElementById("fbForm").addEventListener("submit", async function (e) {
             e.preventDefault();
             var errEl = document.getElementById("fbError");
@@ -250,6 +258,13 @@
             var btn = document.getElementById("fbBtn");
             errEl.textContent = ""; okEl.textContent = "";
             if (!unlocked) { errEl.textContent = "License not verified."; return; }
+            // Download gate: feedback is for testers who installed the build.
+            var downloaded = false;
+            try { downloaded = localStorage.getItem("tweakr_dl_black") === "1"; } catch (e) {}
+            if (!downloaded) {
+                errEl.textContent = "Download and install the Black build first — feedback is for testers who run it.";
+                return;
+            }
             var payload = {
                 tier: "black",
                 kind: document.getElementById("fbKind").value,
@@ -277,6 +292,6 @@
             }
         });
     </script>
-    <script src="{{ site.baseurl }}/assets/auth-nav.js?v=2"></script>
+    <script src="{{ site.baseurl }}/assets/auth-nav.js?v=3"></script>
 </body>
 </html>

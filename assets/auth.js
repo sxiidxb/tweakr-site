@@ -107,6 +107,12 @@
       return await call("my-licenses", {}, session);
     },
 
+    fetchMyFeedback: async function () {
+      const session = readSession();
+      if (!session) return { success: false, error: "Not signed in." };
+      return await call("my-feedback", {}, session);
+    },
+
     submitFeedback: async function (fields) {
       const session = readSession();
       if (!session) return { success: false, error: "Sign in to send feedback." };

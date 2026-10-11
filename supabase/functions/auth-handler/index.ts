@@ -3,7 +3,7 @@
 // either with a service-role key (admin actions) or with the user's own JWT
 // (read actions).
 //
-// POST /functions/v1/auth-handler?action=<one of: signup | login | logout | me | my-licenses | submit-feedback | get-announcements>
+// POST /functions/v1/auth-handler?action=<one of: signup | login | logout | me | my-licenses | my-feedback | submit-feedback | get-announcements>
 //
 // All responses are JSON. CORS is open so the static GitHub Pages site can call
 // us, but we validate the Origin/Referer and reject obviously-wrong requests.
@@ -314,6 +314,25 @@ serve(async (req: Request) => {
     const rows = ((data || []) as { audience: string; message: string; created_at: string }[])
       .filter((r) => r.audience === "all" || r.audience === audience);
     return json({ success: true, announcements: rows }, 200, origin);
+  }
+
+  // ---------- MY FEEDBACK (statuses of my own reports — powers notifications) ----------
+  if (action === "my-feedback") {
+    const { data: userData, error: userErr } = await userClient.auth.getUser();
+    if (userErr || !userData?.user?.email) {
+      return json({ success: false, error: "Not signed in." }, 401, origin);
+    }
+    const { data, error } = await admin
+      .from("feedback")
+      .select("id,tier,kind,title,status,created_at")
+      .eq("email", (userData.user.email as string).toLowerCase())
+      .order("created_at", { ascending: false })
+      .limit(50);
+    if (error) {
+      console.error("my-feedback error:", error);
+      return json({ success: false, error: "Could not load your reports." }, 500, origin);
+    }
+    return json({ success: true, feedback: data || [] }, 200, origin);
   }
 
   return json({ success: false, error: "Unknown action." }, 400, origin);
